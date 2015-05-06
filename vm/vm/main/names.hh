@@ -76,11 +76,24 @@ int GlobalName::compareFeatures(VM vm, RichNode right) {
     return 1;
 }
 
+bool GlobalName::serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val) {
+  globalize(self, vm);
+  GlobalNode* _gnode;
+  GlobalNode::get(vm, _uuid, _gnode);
+  cb->fillResource(val, _gnode, vm->coreatoms.name, self);
+  return true;
+}
+
+bool GlobalName::serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data) {
+  data->mutable_name();
+  return true;
+}
+
 GlobalNode* GlobalName::globalize(RichNode self, VM vm) {
   GlobalNode* result;
   if (!GlobalNode::get(vm, _uuid, result)) {
     result->self.init(vm, self);
-    result->protocol.init(vm, "immval");
+    result->protocol.init(vm, vm->coreatoms.immediate);
   }
   return result;
 }
@@ -121,11 +134,25 @@ UnstableNode NamedName::serialize(VM vm, SE se) {
   return buildTuple(vm, vm->coreatoms.namedname, _printName);
 }
 
+bool NamedName::serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val) {
+  globalize(self, vm);
+  GlobalNode* _gnode;
+  GlobalNode::get(vm, _uuid, _gnode);
+  cb->fillResource(val, _gnode, vm->coreatoms.namedname, self);
+  return true;
+}
+
+bool NamedName::serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data) {
+  auto imm = data->mutable_namedname();
+  imm->set_name(_printName.contents(), _printName.length());
+  return true;
+}
+
 GlobalNode* NamedName::globalize(RichNode self, VM vm) {
   GlobalNode* result;
   if (!GlobalNode::get(vm, _uuid, result)) {
     result->self.init(vm, self);
-    result->protocol.init(vm, "immval");
+    result->protocol.init(vm, vm->coreatoms.immediate);
   }
   return result;
 }
@@ -154,6 +181,11 @@ atom_t UniqueName::getPrintName(VM vm) {
 
 UnstableNode UniqueName::serialize(VM vm, SE se) {
   return buildTuple(vm, vm->coreatoms.uniquename, atom_t(value()));
+}
+
+bool UniqueName::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  cb->copyAndBuild(val->mutable_uniquename()->mutable_name(), atom_t(value()));
+  return true;
 }
 
 void UniqueName::printReprToStream(VM vm, std::ostream& out,

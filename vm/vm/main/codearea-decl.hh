@@ -85,6 +85,12 @@ public:
   UnstableNode serialize(VM vm, SE se);
 
   inline
+  bool serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val);
+
+  inline
+  bool serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data);
+
+  inline
   GlobalNode* globalize(RichNode self, VM vm);
 
 public:

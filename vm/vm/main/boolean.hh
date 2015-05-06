@@ -58,6 +58,11 @@ UnstableNode Boolean::serialize(VM vm, SE se) {
   return buildTuple(vm, vm->coreatoms.bool_, value());
 }
 
+bool Boolean::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  val->mutable_boolean()->set_value(value());
+  return true;
+}
+
 }
 
 #endif // MOZART_GENERATOR

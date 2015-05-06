@@ -127,6 +127,12 @@ public:
 public:
   // Miscellaneous
 
+  std::string str() {
+    std::ostringstream ss;
+    ss << value();
+    return {ss.str()};
+  }
+
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     if (value() >= 0) {
       out << value();
@@ -139,6 +145,12 @@ public:
     } else {
       out << '~' << -value();
     }
+  }
+
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+    val->mutable_integer()->set_value(str());
+    return true;
   }
 
 private:

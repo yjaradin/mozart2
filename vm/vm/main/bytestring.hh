@@ -199,6 +199,11 @@ void ByteString::printReprToStream(VM vm, std::ostream& out,
   out << "\">";
 }
 
+bool ByteString::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  val->mutable_bytestring()->set_value(_bytes.string, _bytes.length);
+  return true;
+}
+
 }
 
 #endif // MOZART_GENERATOR

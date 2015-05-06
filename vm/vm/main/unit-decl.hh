@@ -79,6 +79,9 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "unit";
   }

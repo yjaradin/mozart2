@@ -76,6 +76,9 @@ public:
   inline
   int compareFeatures(VM vm, RichNode right);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
 public:
   // WithPrintName interface
 

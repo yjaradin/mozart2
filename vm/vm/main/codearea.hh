@@ -122,16 +122,37 @@ UnstableNode CodeArea::serialize(VM vm, SE se) {
   return result;
 }
 
+bool CodeArea::serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val) {
+  globalize(self, vm);
+  cb->fillResource(val, _gnode, vm->coreatoms.codearea, self);
+  return true;
+}
+
+bool CodeArea::serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data){
+  auto imm = data->mutable_codearea();
+  for (unsigned int i=0; i<_size / sizeof(ByteCode); ++i) {
+    imm->add_instrs((int) _codeBlock[i]);
+  }
+  imm->set_arity(_arity);
+  imm->set_xcount(_Xcount);
+  imm->set_printname(_printName.contents(), _printName.length());
+  cb->copy(imm->mutable_debug(), _debugData);
+  for (size_t i=0; i< _Kc; ++i) {
+    cb->copy(imm->add_kregs(), getElements(i));
+  }
+  return true;
+}
+
 GlobalNode* CodeArea::globalize(RichNode self, VM vm) {
   if (_gnode == nullptr) {
-    _gnode = GlobalNode::make(vm, self, "immval");
+    _gnode = GlobalNode::make(vm, self, vm->coreatoms.immediate);
   }
   return _gnode;
 }
 
 void CodeArea::setUUID(RichNode self, VM vm, const UUID& uuid) {
   assert(_gnode == nullptr);
-  _gnode = GlobalNode::make(vm, uuid, self, "immval");
+  _gnode = GlobalNode::make(vm, uuid, self, vm->coreatoms.immediate);
 }
 
 }

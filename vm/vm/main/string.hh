@@ -239,6 +239,11 @@ void String::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
   out << '"' << _string << '"';
 }
 
+bool String::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  val->mutable_unicodestring()->set_value(_string.string, _string.length);
+  return true;
+}
+
 }
 
 #endif // MOZART_GENERATOR

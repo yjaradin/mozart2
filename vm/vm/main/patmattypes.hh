@@ -57,6 +57,14 @@ UnstableNode PatMatCapture::serialize(VM vm, SE se) {
     return buildTuple(vm, vm->coreatoms.patmatcapture, index());
 }
 
+bool PatMatCapture::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  if (index()==-1)
+    val->mutable_patmatwildcard();
+  else
+    val->mutable_patmatcapture()->set_pos(index());
+  return true;
+}
+
 ///////////////////////
 // PatMatConjunction //
 ///////////////////////
@@ -120,6 +128,13 @@ UnstableNode PatMatConjunction::serialize(VM vm, SE se) {
   return r;
 }
 
+bool PatMatConjunction::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  pb::PatMatConjunction* conj = val->mutable_patmatconjunction();
+  for (size_t i=0; i<_count; ++i) {
+    cb->copy(conj->add_terms(), getElements(i));
+  }
+  return true;
+}
 //////////////////////
 // PatMatOpenRecord //
 //////////////////////
@@ -181,6 +196,14 @@ UnstableNode PatMatOpenRecord::serialize(VM vm, SE se) {
   return r;
 }
 
+bool PatMatOpenRecord::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  pb::PatMatOpenRecord* orec = val->mutable_patmatopenrecord();
+  for (size_t i=0; i<_width; ++i) {
+    cb->copy(orec->add_fields(), getElements(i));
+  }
+  cb->copy(orec->mutable_arity(), _arity);
+  return true;
+}
 
 nativeint PatMatUtils::maxX(VM vm, RichNode pattern) {
   nativeint max = -1;

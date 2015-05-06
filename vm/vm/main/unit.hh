@@ -52,6 +52,11 @@ UnstableNode Unit::serialize(VM vm, SE se) {
   return mozart::build(vm, vm->coreatoms.unit);
 }
 
+bool Unit::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  val->mutable_unit();
+  return true;
+}
+
 }
 
 #endif // MOZART_GENERATOR

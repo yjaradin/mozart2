@@ -121,6 +121,9 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
 private:
   LString<char> _string;
 };

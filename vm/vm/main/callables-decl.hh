@@ -138,6 +138,9 @@ public:
   UnstableNode serialize(VM vm, SE se);
 
   inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
+  inline
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 private:
@@ -224,6 +227,12 @@ public:
 
   inline
   UnstableNode serialize(VM vm, SE se);
+
+  inline
+  bool serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val);
+
+  inline
+  bool serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data);
 
   inline
   GlobalNode* globalize(RichNode self, VM vm);

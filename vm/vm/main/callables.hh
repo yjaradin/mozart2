@@ -84,6 +84,12 @@ UnstableNode BuiltinProcedure::serialize(VM vm, SE se) {
                     _builtin->getModuleNameAtom(vm), _builtin->getNameAtom(vm));
 }
 
+bool BuiltinProcedure::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  cb->copyAndBuild(val->mutable_builtin()->mutable_module(), _builtin->getModuleNameAtom(vm));
+  cb->copyAndBuild(val->mutable_builtin()->mutable_module(), _builtin->getNameAtom(vm));
+  return true;
+}
+
 void BuiltinProcedure::printReprToStream(VM vm, std::ostream& out,
                                          int depth, int width) {
   atom_t printName = _builtin->getPrintName(vm);
@@ -179,16 +185,31 @@ UnstableNode Abstraction::serialize(VM vm, SE se) {
   return r;
 }
 
+bool Abstraction::serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val) {
+  globalize(self, vm);
+  cb->fillResource(val, _gnode, vm->coreatoms.abstraction, self);
+  return true;
+}
+
+bool Abstraction::serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data){
+  auto imm = data->mutable_abstraction();
+  cb->copy(imm->mutable_codearea(), _body);
+  for (size_t i=0; i< _Gc; ++i) {
+    cb->copy(imm->add_gregs(), getElements(i));
+  }
+  return true;
+}
+
 GlobalNode* Abstraction::globalize(RichNode self, VM vm) {
   if (_gnode == nullptr) {
-    _gnode = GlobalNode::make(vm, self, "immval");
+    _gnode = GlobalNode::make(vm, self, vm->coreatoms.immediate);
   }
   return _gnode;
 }
 
 void Abstraction::setUUID(RichNode self, VM vm, const UUID& uuid) {
   assert(_gnode == nullptr);
-  _gnode = GlobalNode::make(vm, uuid, self, "immval");
+  _gnode = GlobalNode::make(vm, uuid, self, vm->coreatoms.immediate);
 }
 
 void Abstraction::ensureCodeAreaCacheValid(VM vm) {

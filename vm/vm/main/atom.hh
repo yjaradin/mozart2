@@ -61,6 +61,11 @@ void Atom::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
   out << value();
 }
 
+bool Atom::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  val->mutable_atom()->set_value(value().contents(), value().length());
+  return true;
+}
+
 }
 
 #endif // MOZART_GENERATOR

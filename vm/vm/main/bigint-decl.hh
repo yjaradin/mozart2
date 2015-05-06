@@ -119,6 +119,11 @@ public:
     value()->printReprToStream(vm, out, depth, width);
   }
 
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+    val->mutable_integer()->set_value(str());
+    return true;
+  }
+
 private:
   inline
   static UnstableNode shrink(VM vm, const std::shared_ptr<BigIntImplem>& p);

@@ -204,6 +204,13 @@ public:
       out << s;
     }
   }
+
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+    val->mutable_float_()->set_value(value());
+    return true;
+  }
+
 private:
   const double _value;
 };

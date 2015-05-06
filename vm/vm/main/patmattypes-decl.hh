@@ -65,6 +65,9 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
 private:
   nativeint _index;
 };
@@ -117,6 +120,9 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
 private:
   size_t _count;
 };
@@ -154,6 +160,11 @@ public:
   }
 
 public:
+  size_t getCount() {
+    return _width;
+  }
+
+public:
   inline
   StableNode* getElement(size_t index);
 
@@ -168,6 +179,9 @@ public:
 
   inline
   UnstableNode serialize(VM vm, SE se);
+
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
 
 private:
   StableNode _arity;

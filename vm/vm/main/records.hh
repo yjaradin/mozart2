@@ -225,6 +225,15 @@ UnstableNode Tuple::serialize(VM vm, SE se) {
   return r;
 }
 
+bool Tuple::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  auto v = val->mutable_tuple();
+  cb->copy(v->mutable_label(), _label);
+  for (size_t i=0; i< _width; ++i) {
+    cb->copy(v->add_fields(), getElements(i));
+  }
+  return true;
+}
+
 //////////
 // Cons //
 //////////
@@ -368,6 +377,12 @@ UnstableNode Cons::serialize(VM vm, SE se) {
   return result;
 }
 
+bool Cons::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  auto v = val->mutable_cons();
+  cb->copy(v->mutable_head(), _elements[0]);
+  cb->copy(v->mutable_tail(), _elements[1]);
+  return true;
+}
 ///////////
 // Arity //
 ///////////
@@ -462,6 +477,15 @@ UnstableNode Arity::serialize(VM vm, SE se) {
   }
   se->copy(elements[_width], _label);
   return r;
+}
+
+bool Arity::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  auto v = val->mutable_arity();
+  cb->copy(v->mutable_label(), _label);
+  for (size_t i=0; i< _width; ++i) {
+    cb->copy(v->add_features(), getElements(i));
+  }
+  return true;
 }
 
 ////////////
@@ -587,6 +611,15 @@ UnstableNode Record::serialize(VM vm, SE se) {
   return r;
 }
 
+bool Record::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
+  auto v = val->mutable_record();
+  cb->copy(v->mutable_arity(), _arity);
+  for (size_t i=0; i< _width; ++i) {
+    cb->copy(v->add_fields(), getElements(i));
+  }
+  return true;
+}
+
 ///////////
 // Chunk //
 ///////////
@@ -615,6 +648,17 @@ UnstableNode Chunk::serialize(VM vm, SE se) {
   return result;
 }
 
+bool Chunk::serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val) {
+  globalize(self, vm);
+  cb->fillResource(val, _gnode, vm->coreatoms.chunk, self);
+  return true;
+}
+
+bool Chunk::serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data){
+  auto imm = data->mutable_chunk();
+  cb->copy(imm->mutable_record(), _underlying);
+  return true;
+}
 
 GlobalNode* Chunk::globalize(RichNode self, VM vm) {
   if (_gnode == nullptr) {

@@ -158,6 +158,9 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
 private:
   friend class BaseRecord<Tuple>;
 
@@ -270,6 +273,9 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
 private:
   StableNode _elements[2];
 };
@@ -341,6 +347,9 @@ public:
 
   inline
   UnstableNode serialize(VM vm, SE se);
+
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
 
 private:
   StableNode _label;
@@ -428,6 +437,9 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
+  inline
+  bool serialize(VM vm, SerializerCallback* cb, pb::Value* val);
+
 private:
   friend class BaseRecord<Record>;
 
@@ -503,7 +515,14 @@ public:
   UnstableNode serialize(VM vm, SE se);
 
   inline
+  bool serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val);
+
+  inline
   GlobalNode* globalize(RichNode self, VM vm);
+
+  inline
+  bool serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data);
+
 private:
   StableNode _underlying;
   GlobalNode* _gnode;
