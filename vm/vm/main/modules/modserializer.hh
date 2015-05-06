@@ -76,6 +76,54 @@ public:
   };
 
   class Create: public Builtin<Create> {
+  public:
+    Create(): Builtin("create") {}
+
+    static void call(VM vm, In tag, Out result) {
+      result = Serializer::build(vm, tag);
+    }
+  };
+  class Add: public Builtin<Add> {
+  public:
+    Add(): Builtin("add") {}
+    static void call(VM vm, In ser, In add, In imm,  Out result) {
+      auto s = safeGet<Serializer>(vm, ser, "serializer");
+      result = s.add(vm, add, imm);
+    }
+  };
+  class PutImmediate: public Builtin<PutImmediate> {
+  public:
+    PutImmediate(): Builtin("putImmediate") {}
+    static void call(VM vm, In ser, In ref, In to) {
+      auto s = safeGet<Serializer>(vm, ser, "serializer");
+      s.putImmediate(vm, getArgument<nativeint>(vm, ref), getArgument<nativeint>(vm, to));
+    }
+  };
+  class SetRoot: public Builtin<SetRoot> {
+  public:
+    SetRoot(): Builtin("setRoot") {}
+    static void call(VM vm, In ser, In ref) {
+      auto s = safeGet<Serializer>(vm, ser, "serializer");
+      s.setRoot(vm, getArgument<nativeint>(vm, ref));
+    }
+  };
+  class GetSerialized: public Builtin<GetSerialized> {
+  public:
+    GetSerialized(): Builtin("getSerialized") {}
+    static void call(VM vm, In ser, Out result) {
+      auto s = safeGet<Serializer>(vm, ser, "serializer");
+      result = s.getSerialized(vm);
+    }
+  };
+  class Release: public Builtin<Release> {
+  public:
+    Release(): Builtin("Release") {}
+    static void call(VM vm, In ser) {
+      auto s = safeGet<Serializer>(vm, ser, "serializer");
+      s.release(vm);
+    }
+  };
+
 };
 
 }

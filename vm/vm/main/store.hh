@@ -296,6 +296,7 @@ bool GlobalNode::get(VM vm, UUID uuid, GlobalNode*& to) {
   while (true) {
     if (!*cur) {
       to = *cur = new (vm) GlobalNode(uuid);
+      to->reified.init(vm, ReifiedGNode::build(vm, to));
       return false;
     } else if ((*cur)->uuid < uuid) {
       cur = &((*cur)->right);

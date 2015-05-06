@@ -84,6 +84,10 @@ T* getPointerArgument(VM vm, RichNode argValue);
 inline
 void requireFeature(VM vm, RichNode feature);
 
+template <class T>
+inline
+TypedRichNode<T> safeGet(VM vm, RichNode argValue, const char* expectedType);
+
 //////////////////////////////////
 // Working with Oz lists in C++ //
 //////////////////////////////////

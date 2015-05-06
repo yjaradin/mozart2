@@ -124,4 +124,75 @@ UnstableNode SerializerOld::extractByLabels(VM vm, RichNode object, RichNode lab
   return resultList.get(vm);
 }
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+UnstableNode Serializer::add(VM vm, RichNode listAdd, RichNode listImm) {
+  VMAllocatedList<NodeBackup> backup;
+  VMAllocatedList<pb::ImmediateData*> imms;
+  OzListBuilder bRes(vm);
+  SerializerCallback cb(vm, &bRes, this);
+
+  ozListForEach(vm, listAdd, [&cb](RichNode x){ cb.copy(nullptr, x); }, "list of values");
+  ozListForEach(vm, listImm, [&cb, &vm, &imms](RichNode x){
+      auto imm = new pb::ImmediateData();
+      x.type()->serializeImmediate(vm, &cb, x, imm);
+      imms.push_back(vm, imm);
+    }, "list of values");
+  nativeint i = 0;
+  for (auto& x: done) {
+    RichNode r(*x);
+    backup.push_front(vm, r.makeBackup());
+    r.reinit(vm, Serialized::build(vm, i++));
+  }
+  while (!cb.todoNode.empty()) {
+    RichNode n = cb.todoNode.pop_front(vm);
+    pb::Ref* r = cb.todoRef.pop_front(vm);
+    if (n.is<Serialized>()) {
+      r->set_id(n.as<Serialized>().n());
+    } else {
+      pb::RefValue* rv = pickle->add_values();
+      rv->set_ref(nextRef);
+      if (!n.type()->serialize(vm, &cb, n, rv->mutable_value())) {
+	GlobalNode* gn = n.type()->globalize(vm, n);
+	n.update();
+	UnstableNode t = buildTuple(vm, n.type()->getTypeAtom(vm), nextRef, gn->reified);
+	bRes.push_back(vm, t);
+	pb::Resource* res = rv->mutable_value()->mutable_resource();
+	res->mutable_uuid()->set_low(gn->uuid.data0);
+	res->mutable_uuid()->set_high(gn->uuid.data1);
+	cb.copy(res->mutable_proto(), gn->protocol);
+	cb.copy(res->mutable_type(), RichNode(*RichNode(t).as<Tuple>().getLabel()));
+      }
+      done.push_back(vm, n.getStableRef(vm));
+      RichNode r(n);
+      backup.push_front(vm, r.makeBackup());
+      r.reinit(vm, Serialized::build(vm, nextRef));
+      nextRef++;
+    }
+  }
+  OzListBuilder bAdd(vm);
+  ozListForEach(vm, listAdd, [&bAdd, &vm](RichNode x){
+      bAdd.push_back(vm, x.as<Serialized>().n());
+    }, "list of serialized (Don't serialize the list of values to serialize...)");
+  OzListBuilder bImm(vm);
+  for(auto imm: imms) {
+    if (imm) {
+      int bufferSize = imm->ByteSize();
+      auto buffer = newLStringInit(vm, bufferSize, [&imm, bufferSize](unsigned char* buf){
+	  imm->SerializeToArray(buf, bufferSize);
+	});
+      delete imm;
+      bImm.push_back(vm, ByteString::build(vm, buffer));
+    } else {
+      bImm.push_back(vm, Unit::build(vm));
+    }
+  }
+  for (auto& x: backup) {
+    x.restore();
+  }
+  backup.clear(vm);
+  imms.clear(vm);
+  return buildSharp(vm, bAdd.get(vm), bImm.get(vm), bRes.get(vm));
+}
+
 }

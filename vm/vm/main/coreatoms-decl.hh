@@ -66,6 +66,9 @@ struct CoreAtoms {
   atom_t namedname;
   atom_t unicodeString;
 
+  //Serialization protocols
+  atom_t immediate;
+
   // Object Orientation
   unique_name_t ooMeth;
   unique_name_t ooFastMeth;

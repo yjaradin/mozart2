@@ -118,6 +118,87 @@ private:
 #include "SerializerOld-implem-decl-after.hh"
 #endif
 
+///////////////////////////
+// SerializerCallback //
+///////////////////////////
+class Serializer;
+class SerializerCallback {
+private:
+  inline
+  explicit SerializerCallback(VM vm, OzListBuilder* bRes, Serializer* ser);
+
+public:
+  inline
+  void copy(pb::Ref* to, RichNode node);
+
+  template <class T>
+  void copyAndBuild(pb::Ref* to, T&& arg) {
+    copy(to, RichNode(new (vm) StableNode(vm, std::move(arg))));
+  }
+
+  inline
+  void fillResource(pb::Value* val, GlobalNode* gn, atom_t type, RichNode n);
+
+private:
+  friend class Serializer;
+
+  VM vm;
+  OzListBuilder* bRes;
+  Serializer* ser;
+  VMAllocatedList<RichNode> todoNode;
+  VMAllocatedList<pb::Ref*> todoRef;
+};
+
+////////////////
+// Serializer //
+////////////////
+
+#ifndef MOZART_GENERATOR
+#include "Serializer-implem-decl.hh"
+#endif
+
+class Serializer: public DataType<Serializer> {
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom("serializer");
+  }
+
+  inline
+  explicit Serializer(VM vm, RichNode tag);
+
+  inline
+  Serializer(VM vm, GR gr, Serializer& from);
+
+public:
+  UnstableNode add(VM vm, RichNode listAdd, RichNode listImm);
+
+  inline
+  void putImmediate(VM vm, nativeint ref, nativeint to);
+
+  inline
+  void setRoot(VM vm, nativeint ref);
+
+  inline
+  UnstableNode getSerialized(VM vm);
+
+  inline
+  void release(VM vm);
+
+  pb::Pickle* getPickle() {
+    return pickle;
+  }
+
+private:
+  friend class SerializerCallback;
+  nativeint nextRef;
+  pb::Pickle* pickle;
+  VMAllocatedList<StableNode*> done;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Serializer-implem-decl-after.hh"
+#endif
+
 }
 
 #endif // MOZART_SERIALIZER_DECL_H

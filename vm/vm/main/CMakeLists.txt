@@ -12,6 +12,10 @@ configure_file(
 
 # Generated sources
 
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS serialization.proto)
+
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
 
@@ -19,6 +23,7 @@ add_custom_command(
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/mozart.ast
+    -I ${CMAKE_CURRENT_BINARY_DIR}
     -DMOZART_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
     ${CMAKE_CURRENT_SOURCE_DIR}/mozart.hh
@@ -49,12 +54,14 @@ add_custom_command(
   VERBATIM)
 
 add_custom_target(gensources
-  DEPENDS mozart.gen
+  DEPENDS ${PROTO_SRCS} ${PROTO_HDRS} mozart.gen
   VERBATIM)
 
 # Build the library
 
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc
   unify.cc sclone.cc vm.cc coredatatypes.cc coders.cc properties.cc
-  coremodules.cc unpickler.cc serializer.cc pickler.cc)
+  coremodules.cc unpickler.cc serializer.cc pickler.cc
+  ${PROTO_SRCS} ${PROTO_HDRS})
+target_link_libraries(mozartvm ${PROTOBUF_LIBRARIES})
 add_dependencies(mozartvm gensources)

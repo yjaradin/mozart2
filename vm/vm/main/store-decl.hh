@@ -259,6 +259,7 @@ private:
   friend class PatMatUtils;
   friend class SerializerOld;
   friend class Pickler;
+  friend class Serializer;
 
   inline void reinit(VM vm, StableNode& from);
   inline void reinit(VM vm, UnstableNode& from);
@@ -394,6 +395,7 @@ public:
   UUID uuid;
   StableNode self;
   StableNode protocol;
+  StableNode reified;
 
 private:
   GlobalNode* left;

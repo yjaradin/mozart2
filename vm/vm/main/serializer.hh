@@ -61,6 +61,84 @@ SerializerOld::SerializerOld(VM vm, GR gr, SerializerOld& from) {
   gr->copyUnstableNode(done, from.done);
 }
 
+////////////////////////
+// SerializerCallback //
+////////////////////////
+
+SerializerCallback::SerializerCallback(VM vm, OzListBuilder* bRes, Serializer* ser): vm(vm), bRes(bRes), ser(ser) {}
+
+void SerializerCallback::copy(pb::Ref* to, RichNode node) {
+  todoNode.push_back(vm, node);
+  todoRef.push_back(vm, to);
+}
+
+void SerializerCallback::fillResource(pb::Value* val, GlobalNode* gn, atom_t type, RichNode n) {
+  auto res = val->mutable_resource();
+  res->mutable_uuid()->set_low(gn->uuid.data0);
+  res->mutable_uuid()->set_high(gn->uuid.data1);
+  copy(res->mutable_proto(), gn->protocol);
+  copyAndBuild(res->mutable_type(), type);
+  RichNode proto(gn->protocol);
+  if (proto.is<Atom>() 
+      && (proto.as<Atom>().value() == vm->coreatoms.immediate)
+      && ((n.type()->serializeImmediate(vm, this, n, res->mutable_immediate())))) {
+  } else {
+    UnstableNode t = buildTuple(vm, n.type()->getTypeAtom(vm), ser->nextRef, gn->reified);
+    bRes->push_back(vm, t);
+  }
+}
+
+////////////////
+// Serializer //
+////////////////
+
+#include "Serializer-implem.hh"
+
+Serializer::Serializer(VM vm, RichNode tag)
+  : nextRef(0), pickle(new pb::Pickle()) {
+  size_t tagSize = ozVSLengthForBuffer(vm, tag);
+  std::string tagStr;
+  ozVSGet(vm, tag, tagSize, tagStr);
+  pickle->set_tag(tagStr);
+}
+
+Serializer::Serializer(VM vm, GR gr, Serializer& from)
+  :nextRef(from.nextRef), pickle(from.pickle)
+{
+  for(auto p: from.done) {
+    done.push_back(vm, nullptr);
+    gr->copyStableRef(done.back(), p);
+  }
+}
+
+void Serializer::putImmediate(VM vm, nativeint ref, nativeint to) {
+  pb::Value* val = nullptr;
+  for (int i = 0; i < pickle->values_size(); ++i) {
+    if (pickle->values(i).ref() == ref) {
+      val = pickle->mutable_values(i)->mutable_value();
+      break;
+    }
+  }
+  if(val && val->has_resource()){
+    val->mutable_resource()->mutable_immediate()->mutable_highlevel()->mutable_ref()->set_id(to);
+  }
+}
+
+void Serializer::setRoot(VM vm, nativeint ref) {
+  pickle->mutable_root()->set_id(ref);
+}
+
+UnstableNode Serializer::getSerialized(VM vm) {
+  int bufferSize = pickle->ByteSize();
+  auto buffer = newLStringInit(vm, bufferSize, [this, bufferSize](unsigned char* buf){pickle->SerializeToArray(buf, bufferSize);});
+  return ByteString::build(vm, buffer);
+}
+
+void Serializer::release(VM vm){
+  done.clear(vm);
+  delete pickle;
+}
+
 }
 
 #endif // MOZART_GENERATOR

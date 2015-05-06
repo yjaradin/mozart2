@@ -1,0 +1,150 @@
+package mozart.pb;
+option optimize_for = LITE_RUNTIME;
+
+message Ref {
+  optional uint32 id = 1;
+}
+message UUID {
+  optional fixed64 low = 1;
+  optional fixed64 high = 2;
+}
+
+message Integer {
+  optional string value = 1;
+}
+message Float {
+  optional double value = 1;
+}
+message Boolean {
+  optional bool value = 1;
+}
+message Unit {
+}
+message Atom {
+  optional string value = 1;
+}
+message Cons {
+  optional Ref head = 1;
+  optional Ref tail = 2;
+}
+message Tuple {
+  optional Ref label = 1;
+  repeated Ref fields = 2;
+}
+message Arity {
+  optional Ref label = 1;
+  repeated Ref features = 2;
+}
+message Record {
+  optional Ref arity = 1;
+  repeated Ref fields = 2;
+}
+message Builtin {
+  optional Ref module = 1;
+  optional Ref function = 2;
+}
+message PatMatWildcard {
+}
+message PatMatCapture {
+  optional uint64 pos = 1;
+}
+message PatMatConjunction {
+  repeated Ref terms = 1;
+}
+message PatMatOpenRecord {
+  optional Ref arity = 1;
+  repeated Ref fields = 2;
+}
+message UniqueName {
+  optional Ref name = 1;
+}
+message UnicodeString {
+  optional string value = 1;
+}
+message Resource {
+  optional UUID uuid = 1;
+  optional Ref proto = 2;
+  optional Ref type = 3;
+  optional ImmediateData immediate = 4;
+}
+message ByteString {
+  optional bytes value = 1;
+}
+
+message ImmediateData {
+// oneof data_kind {
+  optional CodeAreaData codearea = 1;
+  optional AbstractionData abstraction = 2;
+  optional NamedNameData namedName = 3;
+  optional NameData name = 4;
+  optional ChunkData chunk = 5;
+  optional HighLevelData highLevel = 6;
+// }
+}
+message CodeAreaData {
+  repeated uint32 instrs = 1 [packed=true];
+  optional uint64 arity = 2;
+  optional uint64 xCount = 3;
+  optional string printName = 4;
+  optional Ref debug = 5;
+  repeated Ref kRegs = 6;
+}
+message AbstractionData {
+  optional Ref codeArea = 1;
+  repeated Ref gRegs = 2;
+}
+message NamedNameData {
+  optional string name = 3;
+}
+message NameData {
+}
+message ChunkData {
+  optional Ref record = 1;
+}
+message HighLevelData {
+  optional Ref ref = 1;
+}
+
+message Value {
+// oneof value_kind {
+  optional Integer integer = 1;
+  optional Float float = 2;
+  optional Boolean boolean = 3;
+  optional Unit unit = 4;
+  optional Atom atom = 5;
+  optional Cons cons = 6;
+  optional Tuple tuple = 7;
+  optional Arity arity = 8;
+  optional Record record = 9;
+  optional Builtin builtin = 10;
+  optional PatMatWildcard patMatWildcard = 11;
+  optional PatMatCapture patMatCapture = 12;
+  optional PatMatConjunction patMatConjunction = 13;
+  optional PatMatOpenRecord patMatOpenRecord = 14;
+  optional UniqueName uniqueName = 15;
+  optional UnicodeString unicodeString = 16;
+  optional ByteString byteString = 17;
+  optional Resource resource = 18;
+// }
+}
+
+message RefValue {
+  optional uint32 ref = 1;
+  optional Value value = 2;
+}
+
+message Pickle {
+  optional string tag = 1;
+  optional Ref root = 2;
+  repeated RefValue values = 3;
+}
+
+message Bundle {
+// oneof bundle_kind {
+  optional Pickle pickle = 1;
+// }
+}
+
+message Stream {
+  repeated Bundle elements = 1;
+}

@@ -97,6 +97,16 @@ public:
 
   inline
   virtual UnstableNode serialize(VM vm, SE s, RichNode from) const;
+  
+  inline
+  virtual bool serializeImmediate(VM vm, SerializerCallback* cb, RichNode from, pb::ImmediateData* data) const {
+    return false; 
+  }
+
+  inline
+  virtual bool serialize(VM vm, SerializerCallback* cb, RichNode from, pb::Value* val) const {
+    return false;
+  }
 
   inline
   virtual GlobalNode* globalize(VM vm, RichNode from) const;

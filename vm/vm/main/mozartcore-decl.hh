@@ -27,6 +27,8 @@
 
 #include "core-forward-decl.hh"
 
+#include "serialization.pb.h"
+
 #include "nullable-decl.hh"
 #include "type-decl.hh"
 #include "memword.hh"
@@ -47,5 +49,6 @@
 #include "utf-decl.hh"
 #include "functiontraits-decl.hh"
 #include "vm-decl.hh"
+#include "utils-decl.hh"
 
 #endif // MOZART_MOZARTCORE_DECL_H

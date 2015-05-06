@@ -138,6 +138,15 @@ void requireFeature(VM vm, RichNode feature) {
     PotentialFeature(feature).makeFeature(vm);
 }
 
+// safeGet ---------------------------------------------------------------------
+
+template <class T>
+TypedRichNode<T> safeGet(VM vm, RichNode argValue, const char* expectedType) {
+  if(argValue.isTransient()) waitFor(vm, argValue);
+  if(!argValue.is<T>()) raiseTypeError(vm, expectedType, argValue);
+  return argValue.as<T>();
+}
+
 //////////////////////////////////
 // Working with Oz lists in C++ //
 //////////////////////////////////

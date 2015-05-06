@@ -101,6 +101,8 @@ struct ImplementationDef {
     hasGetTypeAtom = false;
     hasPrintReprToStream = false;
     hasSerialize = false;
+    hasNewSerialize = false;
+    hasSerializeImmediate = false;
     hasGlobalize = false;
     autoGCollect = true;
     autoSClone = true;
@@ -134,6 +136,8 @@ struct ImplementationDef {
   bool hasGetTypeAtom;
   bool hasPrintReprToStream;
   bool hasSerialize;
+  bool hasNewSerialize;
+  bool hasSerializeImmediate;
   bool hasGlobalize;
   bool autoGCollect;
   bool autoSClone;
@@ -197,11 +201,15 @@ void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
     } else {
       if (isa<CXXConstructorDecl>(function))
         continue;
-
       if (function->getNameAsString() == "printReprToStream")
         definition.hasPrintReprToStream = true;
-      else if (function->getNameAsString() == "serialize")
+      else if (function->getNameAsString() == "serialize" && typeToString(function->getResultType()) == "class mozart::UnstableNode"){
         definition.hasSerialize = true;
+      }
+      else if (function->getNameAsString() == "serialize" && typeToString(function->getResultType()) == "bool")
+        definition.hasNewSerialize = true;
+      else if (function->getNameAsString() == "serializeImmediate")
+        definition.hasSerializeImmediate = true;
       else if (function->getNameAsString() == "globalize")
         definition.hasGlobalize = true;
       else if (function->getNameAsString() == "compareFeatures")
@@ -351,6 +359,18 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
     to << "  UnstableNode serialize(VM vm, SE s, RichNode from) const;\n";
   }
 
+  if (hasNewSerialize) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  bool serialize(VM vm, SerializerCallback* cb, RichNode from, pb::Value* val) const;\n";
+  }
+
+  if (hasSerializeImmediate) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  bool serializeImmediate(VM vm, SerializerCallback* cb, RichNode from, pb::ImmediateData* data) const;\n";
+  }
+
   if (hasGlobalize) {
     to << "\n";
     to << "  inline\n";
@@ -442,6 +462,24 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
        << "::serialize(VM vm, SE s, RichNode from) const {\n";
     to << "  assert(from.is<" << name << ">());\n";
     to << "  return from.as<" << name << ">().serialize(vm, s);\n";
+    to << "}\n";
+  }
+
+  if (hasNewSerialize) {
+    to << "\n";
+    to << "bool " << className
+       << "::serialize(VM vm, SerializerCallback* cb, RichNode from, pb::Value* val) const {\n";
+    to << "  assert(from.is<" << name << ">());\n";
+    to << "  return from.as<" << name << ">().serialize(vm, cb, val);\n";
+    to << "}\n";
+  }
+
+  if (hasSerializeImmediate) {
+    to << "\n";
+    to << "bool " << className
+       << "::serializeImmediate(VM vm, SerializerCallback* cb, RichNode from, pb::ImmediateData* data) const {\n";
+    to << "  assert(from.is<" << name << ">());\n";
+    to << "  return from.as<" << name << ">().serializeImmediate(vm, cb, data);\n";
     to << "}\n";
   }
 
