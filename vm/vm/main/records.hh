@@ -593,26 +593,35 @@ UnstableNode Record::serialize(VM vm, SE se) {
 
 #include "Chunk-implem.hh"
 
-void Chunk::create(StableNode*& self, VM vm, GR gr, Chunk from) {
-  gr->copyStableRef(self, from.getUnderlying());
+Chunk::Chunk(VM vm, GR gr, Chunk& from):
+  WithHome(vm, gr, from) {
+  gr->copyGNode(_gnode, from._gnode);
+  gr->copyStableNode(_underlying, from._underlying);
 }
 
 bool Chunk::lookupFeature(VM vm, RichNode feature,
                           nullable<UnstableNode&> value) {
-  return Dottable(*_underlying).lookupFeature(vm, feature, value);
+  return Dottable(_underlying).lookupFeature(vm, feature, value);
 }
 
 bool Chunk::lookupFeature(VM vm, nativeint feature,
                           nullable<UnstableNode&> value) {
-  return Dottable(*_underlying).lookupFeature(vm, feature, value);
+  return Dottable(_underlying).lookupFeature(vm, feature, value);
 }
 
 UnstableNode Chunk::serialize(VM vm, SE se) {
   auto result = buildTuple(vm, vm->coreatoms.chunk, OptVar::build(vm));
-  se->copy(RichNode(result).as<Tuple>().getElements(0), *_underlying);
+  se->copy(RichNode(result).as<Tuple>().getElements(0), _underlying);
   return result;
 }
 
+
+GlobalNode* Chunk::globalize(RichNode self, VM vm) {
+  if (_gnode == nullptr) {
+    _gnode = GlobalNode::make(vm, self, vm->coreatoms.immediate);
+  }
+  return _gnode;
+}
 }
 
 #endif // MOZART_GENERATOR

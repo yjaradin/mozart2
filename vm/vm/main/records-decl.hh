@@ -447,28 +447,31 @@ private:
 #include "Chunk-implem-decl.hh"
 #endif
 
-class Chunk: public DataType<Chunk>, StoredAs<StableNode*> {
+class Chunk: public DataType<Chunk>, public WithHome {
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->coreatoms.chunk;
   }
 
-  explicit Chunk(StableNode* underlying): _underlying(underlying) {}
 
-  static void create(StableNode*& self, VM vm, StableNode* underlying) {
-    self = underlying;
+  Chunk(VM vm, StableNode* underlying):
+    WithHome(vm),
+    _gnode(nullptr) {
+    _underlying.init(vm, *underlying);
   }
 
-  static void create(StableNode*& self, VM vm, RichNode underlying) {
-    self = underlying.getStableRef(vm);
+  Chunk(VM vm, RichNode underlying):
+    WithHome(vm),
+    _gnode(nullptr) {
+    _underlying.init(vm, underlying);
   }
 
   inline
-  static void create(StableNode*& self, VM vm, GR gr, Chunk from);
+  Chunk(VM vm, GR gr, Chunk& from);
 
 public:
   StableNode* getUnderlying() {
-    return _underlying;
+    return &_underlying;
   }
 
 public:
@@ -499,8 +502,11 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
 private:
-  StableNode* _underlying;
+  StableNode _underlying;
+  GlobalNode* _gnode;
 };
 
 #ifndef MOZART_GENERATOR
