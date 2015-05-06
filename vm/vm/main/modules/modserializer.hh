@@ -46,7 +46,7 @@ public:
     New(): Builtin("new") {}
 
     static void call(VM vm, Out result) {
-      result = Serializer::build(vm);
+      result = SerializerOld::build(vm);
     }
   };
 
@@ -55,8 +55,8 @@ public:
     Serialize(): Builtin("serialize") {}
 
     static void call(VM vm, In serializer, In todo, Out result) {
-      if (serializer.is<Serializer>()) {
-        auto s=serializer.as<Serializer>();
+      if (serializer.is<SerializerOld>()) {
+        auto s=serializer.as<SerializerOld>();
         result = s.doSerialize(vm, todo);
       } else if (serializer.isTransient()) {
         waitFor(vm, serializer);
@@ -71,9 +71,11 @@ public:
     ExtractByLabels(): Builtin("extractByLabels") {}
 
     static void call(VM vm, In object, In labelsRecord, Out result) {
-      result = Serializer::extractByLabels(vm, object, labelsRecord);
+      result = SerializerOld::extractByLabels(vm, object, labelsRecord);
     }
   };
+
+  class Create: public Builtin<Create> {
 };
 
 }

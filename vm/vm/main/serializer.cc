@@ -28,7 +28,7 @@
 
 namespace mozart {
 
-UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
+UnstableNode SerializerOld::doSerialize(VM vm, RichNode todo) {
   SerializationCallback cb(vm);
   using namespace patternmatching;
   VMAllocatedList<NodeBackup> nodeBackups;
@@ -92,7 +92,7 @@ UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
   return UnstableNode(vm, done);
 }
 
-UnstableNode Serializer::extractByLabels(VM vm, RichNode object, RichNode labels) {
+UnstableNode SerializerOld::extractByLabels(VM vm, RichNode object, RichNode labels) {
   SerializationCallback cb(vm);
 
   Dottable validLabels(labels);

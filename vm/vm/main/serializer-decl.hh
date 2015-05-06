@@ -47,7 +47,7 @@ public:
   void copy(RichNode to, RichNode from);
 
 private:
-  friend class Serializer;
+  friend class SerializerOld;
   friend class Pickler;
 
   VM vm;
@@ -85,25 +85,25 @@ private:
 #include "Serialized-implem-decl-after.hh"
 #endif
 
-////////////////
-// Serializer //
-////////////////
+///////////////////
+// SerializerOld //
+///////////////////
 
 #ifndef MOZART_GENERATOR
-#include "Serializer-implem-decl.hh"
+#include "SerializerOld-implem-decl.hh"
 #endif
 
-class Serializer: public DataType<Serializer> {
+class SerializerOld: public DataType<SerializerOld> {
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom("serializer");
   }
 
   inline
-  explicit Serializer(VM vm);
+  explicit SerializerOld(VM vm);
 
   inline
-  Serializer(VM vm, GR gr, Serializer& from);
+  SerializerOld(VM vm, GR gr, SerializerOld& from);
 
 public:
   UnstableNode doSerialize(VM vm, RichNode todo);
@@ -115,7 +115,7 @@ private:
 };
 
 #ifndef MOZART_GENERATOR
-#include "Serializer-implem-decl-after.hh"
+#include "SerializerOld-implem-decl-after.hh"
 #endif
 
 }

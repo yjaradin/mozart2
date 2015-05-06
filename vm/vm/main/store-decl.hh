@@ -257,7 +257,7 @@ private:
   friend class SpaceCloner;
   friend struct StructuralDualWalk;
   friend class PatMatUtils;
-  friend class Serializer;
+  friend class SerializerOld;
   friend class Pickler;
 
   inline void reinit(VM vm, StableNode& from);

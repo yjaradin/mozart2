@@ -48,16 +48,16 @@ void SerializationCallback::copy(RichNode to, RichNode from) {
 
 #include "Serialized-implem.hh"
 
-////////////////
-// Serializer //
-////////////////
+///////////////////
+// SerializerOld //
+///////////////////
 
-#include "Serializer-implem.hh"
+#include "SerializerOld-implem.hh"
 
-Serializer::Serializer(VM vm):
+SerializerOld::SerializerOld(VM vm):
   done(buildNil(vm)) {}
 
-Serializer::Serializer(VM vm, GR gr, Serializer& from) {
+SerializerOld::SerializerOld(VM vm, GR gr, SerializerOld& from) {
   gr->copyUnstableNode(done, from.done);
 }
 
