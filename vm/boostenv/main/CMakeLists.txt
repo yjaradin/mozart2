@@ -50,6 +50,7 @@ add_custom_command(
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
+    -I ${CMAKE_CURRENT_BINARY_DIR}/../../vm/main
     -DMOZART_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
     ${CMAKE_CURRENT_SOURCE_DIR}/boostenv.hh

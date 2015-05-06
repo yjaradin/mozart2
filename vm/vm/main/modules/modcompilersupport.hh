@@ -300,6 +300,15 @@ public:
     }
   };
 
+  class PatMatMaxXReg: public Builtin<PatMatMaxXReg> {
+  public:
+    PatMatMaxXReg(): Builtin("patMatMaxXReg") {}
+
+    static void call(VM vm, In pattern, Out result) {
+      result = build(vm, PatMatUtils::maxX(vm, pattern));
+    }
+  };
+
   class IsBuiltin: public Builtin<IsBuiltin> {
   public:
     IsBuiltin(): Builtin("isBuiltin") {}

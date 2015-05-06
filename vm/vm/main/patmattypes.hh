@@ -181,6 +181,60 @@ UnstableNode PatMatOpenRecord::serialize(VM vm, SE se) {
   return r;
 }
 
+
+nativeint PatMatUtils::maxX(VM vm, RichNode pattern) {
+  nativeint max = -1;
+  VMAllocatedList<RichNode> todo;
+  VMAllocatedList<NodeBackup> backup;
+  pattern.ensureStable(vm);
+  todo.push_back(vm, pattern);
+  while (!todo.empty()) {
+    RichNode current = todo.pop_front(vm);
+    bool recur = false;
+    if (pattern.is<PatMatCapture>()) {
+      nativeint cand = pattern.as<PatMatCapture>().index();
+      if (cand > max) max = cand;
+    } else if (pattern.is<PatMatOpenRecord>()) {
+      auto openrec = pattern.as<PatMatOpenRecord>();
+      for (size_t i = 0; i < openrec.getCount(); ++i) {
+	todo.push_back(vm, *openrec.getElement(i));
+	recur = true;
+      }
+    } else if (pattern.is<PatMatConjunction>()) {
+      auto conj = pattern.as<PatMatConjunction>();
+      for (size_t i = 0; i < conj.getCount(); ++i) {
+	todo.push_back(vm, *conj.getElement(i));
+	recur = true;
+      }	  
+    } else if (pattern.is<Record>()) {
+      auto rec = pattern.as<Record>();
+      for (size_t i = 0; i < rec.getWidth(); ++i) {
+	todo.push_back(vm, *rec.getElement(i));
+	recur = true;
+      }	  
+    } else if (pattern.is<Tuple>()) {
+      auto tup = pattern.as<Tuple>();
+      for (size_t i = 0; i < tup.getWidth(); ++i) {
+	todo.push_back(vm, *tup.getElement(i));
+	recur = true;
+      }	  
+    } else if (pattern.is<Cons>()) {
+      auto cons = pattern.as<Cons>();
+      todo.push_back(vm, *cons.getHead());
+      todo.push_back(vm, *cons.getTail());
+      recur = true;
+    }
+    if (recur) {
+      backup.push_front(vm, current.makeBackup());
+      current.reinit(vm, Unit::build(vm));
+    }
+  }
+  while (!backup.empty()) {
+    backup.pop_front(vm).restore();
+  }
+  return max;
+}
+
 }
 
 #endif // MOZART_GENERATOR

@@ -178,6 +178,12 @@ private:
 #include "PatMatOpenRecord-implem-decl-after.hh"
 #endif
 
+class PatMatUtils {
+public:
+  inline
+  static nativeint maxX(VM vm, RichNode pattern);
+};
+
 }
 
 #endif // MOZART_PATMATTYPES_DECL_H

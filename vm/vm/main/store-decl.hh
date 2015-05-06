@@ -256,6 +256,7 @@ private:
   friend class GarbageCollector;
   friend class SpaceCloner;
   friend struct StructuralDualWalk;
+  friend class PatMatUtils;
   friend class Serializer;
   friend class Pickler;
 

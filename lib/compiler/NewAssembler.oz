@@ -24,9 +24,6 @@
 
 functor
 
-require
-   BootSerializer at 'x-oz://boot/Serializer'
-
 import
    System
    CompilerSupport
@@ -431,13 +428,10 @@ define
       end
 
       meth LookForXRegsInPattern(Pattern)
-         Qs = {BootSerializer.extractByLabels Pattern r(patmatcapture:_)}
-      in
-         {ForAll Qs proc {$ _#patmatcapture(Idx)}
-            if Idx >= @xRegCount then
-               xRegCount := Idx + 1
-            end
-         end}
+	MaxX = {CompilerSupport.patMatMaxXReg Pattern} in
+	if MaxX >= @xRegCount then 
+	   xRegCount := MaxX + 1
+        end
       end
 
       meth output($)

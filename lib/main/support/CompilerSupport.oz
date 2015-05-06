@@ -53,6 +53,7 @@ export
    MakeArity
    NewPatMatWildcard
    NewPatMatCapture
+   PatMatMaxXReg
 
 define
 
@@ -115,5 +116,6 @@ define
 
    NewPatMatWildcard = Boot_CompilerSupport.newPatMatWildcard
    NewPatMatCapture = Boot_CompilerSupport.newPatMatCapture
+   PatMatMaxXReg = Boot_CompilerSupport.patMatMaxXReg
 
 end
