@@ -149,7 +149,6 @@ typedef SerializationCallback* SE;
 
 class SerializerCallback;
 
-namespace pb {
 template <typename T>
 class TypeInfoOf;
 
