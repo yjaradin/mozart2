@@ -75,9 +75,9 @@ public:
     }
   };
 
-  class Create: public Builtin<Create> {
+  class NewSerializer: public Builtin<NewSerializer> {
   public:
-    Create(): Builtin("create") {}
+    NewSerializer(): Builtin("newSerializer") {}
 
     static void call(VM vm, In tag, Out result) {
       result = Serializer::build(vm, tag);
@@ -115,15 +115,55 @@ public:
       result = s.getSerialized(vm);
     }
   };
-  class Release: public Builtin<Release> {
+  class ReleaseSerializer: public Builtin<ReleaseSerializer> {
   public:
-    Release(): Builtin("Release") {}
+    ReleaseSerializer(): Builtin("releaseSerializer") {}
     static void call(VM vm, In ser) {
       auto s = safeGet<Serializer>(vm, ser, "serializer");
       s.release(vm);
     }
   };
 
+  class NewDeserializer: public Builtin<NewDeserializer> {
+  public:
+    NewDeserializer(): Builtin("newDeserializer") {}
+
+    static void call(VM vm, In bytes, Out res, Out result) {
+      result = Unserializer::build(vm, bytes, res);
+    }
+  };
+  class GetRoot: public Builtin<GetRoot> {
+  public:
+    GetRoot(): Builtin("getRoot") {}
+    static void call(VM vm, In deser, Out result) {
+      auto un = safeGet<Unserializer>(vm, deser, "deserializer");
+      result = un.getRoot(vm);
+    }
+  };
+  class GetTag: public Builtin<GetTag> {
+  public:
+    GetTag(): Builtin("getTag") {}
+    static void call(VM vm, In deser, Out result) {
+      auto un = safeGet<Unserializer>(vm, deser, "deserializer");
+      result = un.getTag(vm);
+    }
+  };
+  class SetImmediate: public Builtin<SetImmediate> {
+  public:
+    SetImmediate(): Builtin("setImmediate") {}
+    static void call(VM vm, In deser, In gnode, In bytes) {
+      auto un = safeGet<Unserializer>(vm, deser, "deserializer");
+      un.setImmediate(vm, bytes, getArgument<GlobalNode*>(vm, gnode));
+    }
+  };
+  class ReleaseDeserializer: public Builtin<ReleaseDeserializer> {
+  public:
+    ReleaseDeserializer(): Builtin("releaseDeserializer") {}
+    static void call(VM vm, In deser) {
+      auto un = safeGet<Unserializer>(vm, deser, "deserializer");
+      un.release(vm);
+    }
+  };
 };
 
 }
