@@ -491,7 +491,7 @@ nativeint ozVBSLengthForBufferNoRaise(VM vm, RichNode vbs) {
   } else if (matchesCons(vm, vbs, wildcard(), wildcard())) {
     nativeint result = 0;
     bool ok = ozListForEachNoRaise(vm, vbs,
-      [&result] (unsigned char b) {
+      [&result] (nativeint b) {
         ++result;
       }
     );
