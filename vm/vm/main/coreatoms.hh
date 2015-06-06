@@ -59,7 +59,8 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
   unicodeString = atomTable.get(vm, "unicodeString");
 
   immediate = atomTable.get(vm, "immediate");
-
+  port = atomTable.get(vm, "port");
+  
   succeeded = atomTable.get(vm, "succeeded");
   entailed = atomTable.get(vm, "entailed");
   stuck = atomTable.get(vm, "stuck");

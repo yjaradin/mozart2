@@ -47,6 +47,9 @@ public:
   Port(VM vm, UnstableNode& stream);
 
   inline
+  Port(VM vm, GlobalNode* gnode, UnstableNode& stream);
+
+  inline
   Port(VM vm, GR gr, Port& from);
 
 public:
@@ -69,7 +72,12 @@ public:
     out << "<Port>";
   }
 
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
+
+
 private:
+  GlobalNode* _gnode;
   UnstableNode _stream;
 };
 

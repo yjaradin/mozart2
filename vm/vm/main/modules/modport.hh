@@ -50,6 +50,15 @@ public:
     }
   };
 
+  class NewWithGNode: public Builtin<NewWithGNode> {
+  public:
+    NewWithGNode(): Builtin("newWithGNode") {}
+
+    static void call(VM vm, In gnode, Out stream, Out result) {
+      result = Port::build(vm, getArgument<GlobalNode*>(vm, gnode), stream);
+    }
+  };
+
   class Is: public Builtin<Is> {
   public:
     Is(): Builtin("is") {}

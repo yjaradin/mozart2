@@ -68,6 +68,7 @@ struct CoreAtoms {
 
   //Serialization protocols
   atom_t immediate;
+  atom_t port;
 
   // Object Orientation
   unique_name_t ooMeth;

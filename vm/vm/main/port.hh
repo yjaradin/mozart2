@@ -37,12 +37,18 @@ namespace mozart {
 
 #include "Port-implem.hh"
 
-Port::Port(VM vm, UnstableNode& stream): WithHome(vm) {
+Port::Port(VM vm, UnstableNode& stream): WithHome(vm), _gnode(nullptr) {
+  _stream = ReadOnlyVariable::build(vm);
+  stream.copy(vm, _stream);
+}
+
+Port::Port(VM vm, GlobalNode* gnode, UnstableNode& stream): WithHome(vm), _gnode(gnode) {
   _stream = ReadOnlyVariable::build(vm);
   stream.copy(vm, _stream);
 }
 
 Port::Port(VM vm, GR gr, Port& from): WithHome(vm, gr, from) {
+  gr->copyGNode(_gnode, from._gnode);
   gr->copyUnstableNode(_stream, from._stream);
 }
 
@@ -62,6 +68,13 @@ UnstableNode Port::sendReceive(VM vm, RichNode value) {
   auto result = OptVar::build(vm);
   sendToReadOnlyStream(vm, _stream, buildSharp(vm, value, result));
   return result;
+}
+
+GlobalNode* Port::globalize(RichNode self, VM vm) {
+  if (_gnode == nullptr) {
+    _gnode = GlobalNode::make(vm, self, vm->coreatoms.port);
+  }
+  return _gnode;
 }
 
 ////////////
