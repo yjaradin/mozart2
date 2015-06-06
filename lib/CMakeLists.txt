@@ -56,6 +56,9 @@ set(OTHER_LIBRARY_FUNCTORS
     "${MOZART_LIB_DIR}/wp/Tk.oz"
     "${MOZART_LIB_DIR}/wp/TkTools.oz"
     "${MOZART_LIB_DIR}/wp/Tix.oz"
+    "${MOZART_LIB_DIR}/dp/Serialization.oz"
+    "${MOZART_LIB_DIR}/dp/Site.oz"
+    "${MOZART_LIB_DIR}/dp/Protocol.oz"
     "${MOZART_DIR}/vm/boostenv/lib/VM.oz")
 
 # ---------------------------------------------------------------------------- #
