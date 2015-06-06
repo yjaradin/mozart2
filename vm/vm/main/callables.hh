@@ -85,8 +85,8 @@ UnstableNode BuiltinProcedure::serialize(VM vm, SE se) {
 }
 
 bool BuiltinProcedure::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
-  cb->copyAndBuild(val->mutable_builtin()->mutable_module(), _builtin->getModuleNameAtom(vm));
-  cb->copyAndBuild(val->mutable_builtin()->mutable_module(), _builtin->getNameAtom(vm));
+  val->mutable_builtin()->set_module(_builtin->getModuleName());
+  val->mutable_builtin()->set_function(_builtin->getName());
   return true;
 }
 
