@@ -148,10 +148,11 @@ UnstableNode Serializer::add(VM vm, RichNode listAdd, RichNode listImm) {
     RichNode n = cb.todoNode.pop_front(vm);
     pb::Ref* r = cb.todoRef.pop_front(vm);
     if (n.is<Serialized>()) {
-      r->set_id(n.as<Serialized>().n());
+      if (r) r->set_id(n.as<Serialized>().n());
     } else {
       pb::RefValue* rv = pickle->add_values();
       rv->set_ref(nextRef);
+      if (r) r->set_id(nextRef);
       if (!n.type()->serialize(vm, &cb, n, rv->mutable_value())) {
 	GlobalNode* gn = n.type()->globalize(vm, n);
 	n.update();
@@ -164,9 +165,9 @@ UnstableNode Serializer::add(VM vm, RichNode listAdd, RichNode listImm) {
 	cb.copy(res->mutable_type(), RichNode(*RichNode(t).as<Tuple>().getLabel()));
       }
       done.push_back(vm, n.getStableRef(vm));
-      RichNode r(n);
-      backup.push_front(vm, r.makeBackup());
-      r.reinit(vm, Serialized::build(vm, nextRef));
+      RichNode nn(n);
+      backup.push_front(vm, nn.makeBackup());
+      nn.reinit(vm, Serialized::build(vm, nextRef));
       nextRef++;
     }
   }
