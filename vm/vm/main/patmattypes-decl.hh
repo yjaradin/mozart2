@@ -72,6 +72,16 @@ private:
   nativeint _index;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::PatMatWildcard& from) {
+  return PatMatCapture::build(vm, -1);
+}
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::PatMatCapture& from) {
+  return PatMatCapture::build(vm, from.pos());
+}
+
+
 #ifndef MOZART_GENERATOR
 #include "PatMatCapture-implem-decl-after.hh"
 #endif
@@ -95,6 +105,9 @@ public:
 
   inline
   PatMatConjunction(VM vm, size_t width, GR gr, PatMatConjunction& from);
+  
+  inline
+  PatMatConjunction(VM vm, size_t width, Unserializer* un, const pb::PatMatConjunction& from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -127,6 +140,11 @@ private:
   size_t _count;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::PatMatConjunction& from) {
+  return PatMatConjunction::build(vm, from.terms_size(), un, from);
+}
+
 #ifndef MOZART_GENERATOR
 #include "PatMatConjunction-implem-decl-after.hh"
 #endif
@@ -152,6 +170,9 @@ public:
 
   inline
   PatMatOpenRecord(VM vm, size_t width, GR gr, PatMatOpenRecord& from);
+
+  inline
+  PatMatOpenRecord(VM vm, size_t width, Unserializer* un, const pb::PatMatOpenRecord& from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -187,6 +208,11 @@ private:
   StableNode _arity;
   size_t _width;
 };
+
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::PatMatOpenRecord& from) {
+  return PatMatOpenRecord::build(vm, from.fields_size(), un, from);
+}
 
 #ifndef MOZART_GENERATOR
 #include "PatMatOpenRecord-implem-decl-after.hh"

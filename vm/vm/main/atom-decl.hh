@@ -109,6 +109,11 @@ private:
   atom_t _value;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Atom& from) {
+  return Atom::build(vm, from.value().length(), from.value().c_str());
+}
+
 #ifndef MOZART_GENERATOR
 #include "Atom-implem-decl-after.hh"
 #endif

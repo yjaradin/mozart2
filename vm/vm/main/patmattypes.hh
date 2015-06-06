@@ -87,6 +87,13 @@ PatMatConjunction::PatMatConjunction(VM vm, size_t count, GR gr,
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), count);
 }
 
+PatMatConjunction::PatMatConjunction(VM vm, size_t count, Unserializer* un,
+                                     const pb::PatMatConjunction& from) {
+  _count = count;
+  for (size_t i = 0; i < count; i++)
+    getElements(i).init(vm, un->getFromRef(from.terms().Get(i)));
+}
+
 StableNode* PatMatConjunction::getElement(size_t index) {
   return &getElements(index);
 }
@@ -160,6 +167,14 @@ PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width, GR gr,
   _width = width;
 
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
+}
+
+PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width, Unserializer* un,
+                                   const pb::PatMatOpenRecord& from) {
+  _arity.init(vm, un->getFromRef(from.arity()));
+  _width = width;
+  for (size_t i = 0; i < width; i++)
+    getElements(i).init(vm, un->getFromRef(from.fields().Get(i)));
 }
 
 StableNode* PatMatOpenRecord::getElement(size_t index) {

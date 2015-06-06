@@ -93,6 +93,11 @@ private:
   const bool _value;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Boolean& from) {
+  return Boolean::build(vm, from.value());
+}
+
 #ifndef MOZART_GENERATOR
 #include "Boolean-implem-decl-after.hh"
 #endif

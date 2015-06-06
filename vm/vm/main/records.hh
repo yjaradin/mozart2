@@ -111,6 +111,13 @@ Tuple::Tuple(VM vm, size_t width, GR gr, Tuple& from) {
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
 }
 
+Tuple::Tuple(VM vm, size_t width, Unserializer* un, const pb::Tuple& from) {
+  _label.init(vm, un->getFromRef(from.label()));
+  _width = width;
+  for (size_t i = 0; i < width; i++)
+    getElements(i).init(vm, un->getFromRef(from.fields().Get(i)));
+}
+
 bool Tuple::equals(VM vm, RichNode right, WalkStack& stack) {
   auto rhs = right.as<Tuple>();
 
@@ -232,6 +239,10 @@ bool Tuple::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
     cb->copy(v->add_fields(), getElements(i));
   }
   return true;
+}
+
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Tuple& from) {
+  return Tuple::build(vm, from.fields_size(), un, from);
 }
 
 //////////
@@ -383,6 +394,11 @@ bool Cons::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
   cb->copy(v->mutable_tail(), _elements[1]);
   return true;
 }
+
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Cons& from) {
+  return Cons::build(vm, un->getFromRef(from.head()), un->getFromRef(from.tail()));
+}
+
 ///////////
 // Arity //
 ///////////
@@ -405,6 +421,13 @@ Arity::Arity(VM vm, size_t width, GR gr, Arity& from) {
   gr->copyStableNode(_label, from._label);
 
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
+}
+
+Arity::Arity(VM vm, size_t width, Unserializer* un, const pb::Arity& from) {
+  _label.init(vm, un->getFromRef(from.label()));
+  _width = width;
+  for (size_t i = 0; i < width; i++)
+    getElements(i).init(vm, un->getFromRef(from.features().Get(i)));
 }
 
 StableNode* Arity::getElement(size_t index) {
@@ -488,6 +511,10 @@ bool Arity::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
   return true;
 }
 
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Arity& from) {
+  return Arity::build(vm, from.features_size(), un, from);
+}
+
 ////////////
 // Record //
 ////////////
@@ -512,6 +539,13 @@ Record::Record(VM vm, size_t width, GR gr, Record& from) {
   _width = width;
 
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
+}
+
+Record::Record(VM vm, size_t width, Unserializer* un, const pb::Record& from) {
+  _arity.init(vm, un->getFromRef(from.arity()));
+  _width = width;
+  for (size_t i = 0; i < width; i++)
+    getElements(i).init(vm, un->getFromRef(from.fields().Get(i)));
 }
 
 bool Record::equals(VM vm, RichNode right, WalkStack& stack) {
@@ -620,6 +654,10 @@ bool Record::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
   return true;
 }
 
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Record& from) {
+  return Record::build(vm, from.fields_size(), un, from);
+}
+
 ///////////
 // Chunk //
 ///////////
@@ -666,6 +704,7 @@ GlobalNode* Chunk::globalize(RichNode self, VM vm) {
   }
   return _gnode;
 }
+
 }
 
 #endif // MOZART_GENERATOR

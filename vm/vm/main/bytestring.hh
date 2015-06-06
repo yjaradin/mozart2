@@ -204,6 +204,12 @@ bool ByteString::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
   return true;
 }
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::ByteString& from) {
+  return ByteString::build(vm, newLString(vm, reinterpret_cast<const unsigned char*>(from.value().c_str()), from.value().length()));
+}
+
+  
 }
 
 #endif // MOZART_GENERATOR

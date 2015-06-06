@@ -215,6 +215,11 @@ private:
   const double _value;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Float& from){
+  return Float::build(vm, from.value());
+}
+
 #ifndef MOZART_GENERATOR
 #include "Float-implem-decl-after.hh"
 #endif

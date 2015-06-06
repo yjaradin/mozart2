@@ -148,6 +148,7 @@ class SerializationCallback;
 typedef SerializationCallback* SE;
 
 class SerializerCallback;
+class Unserializer;
 
 template <typename T>
 class TypeInfoOf;

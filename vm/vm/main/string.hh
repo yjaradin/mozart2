@@ -244,6 +244,12 @@ bool String::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
   return true;
 }
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::UnicodeString& from) {
+  return String::build(vm, newLString(vm, from.value().c_str(), from.value().length()));
+}
+
+  
 }
 
 #endif // MOZART_GENERATOR

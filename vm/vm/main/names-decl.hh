@@ -142,6 +142,11 @@ private:
   UUID _uuid;
 };
 
+inline
+UnstableNode deserializeImmediate(VM vm, Unserializer* un, GlobalNode* gnode, const pb::NameData& from) {
+  return GlobalName::build(vm, gnode->uuid);
+}
+
 #ifndef MOZART_GENERATOR
 #include "GlobalName-implem-decl-after.hh"
 #endif
@@ -217,6 +222,11 @@ private:
   UUID _uuid;
 };
 
+inline
+UnstableNode deserializeImmediate(VM vm, Unserializer* un, GlobalNode* gnode, const pb::NamedNameData& from) {
+  return NamedName::build(vm, vm->getAtom(from.name()), gnode->uuid);
+}
+
 #ifndef MOZART_GENERATOR
 #include "NamedName-implem-decl-after.hh"
 #endif
@@ -286,6 +296,11 @@ public:
 private:
   unique_name_t _value;
 };
+
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::UniqueName& from) {
+  return UniqueName::build(vm, vm->getUniqueName(from.name().length(), from.name().c_str()));
+}
 
 #ifndef MOZART_GENERATOR
 #include "UniqueName-implem-decl-after.hh"

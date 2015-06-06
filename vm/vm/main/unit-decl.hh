@@ -87,6 +87,11 @@ public:
   }
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Unit& from) {
+  return Unit::build(vm);
+}
+
 #ifndef MOZART_GENERATOR
 #include "Unit-implem-decl-after.hh"
 #endif

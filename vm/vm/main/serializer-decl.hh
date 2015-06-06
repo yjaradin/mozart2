@@ -199,6 +199,54 @@ private:
 #include "Serializer-implem-decl-after.hh"
 #endif
 
+//////////////////
+// Unserializer //
+//////////////////
+
+#ifndef MOZART_GENERATOR
+#include "Unserializer-implem-decl.hh"
+#endif
+
+class Unserializer: public DataType<Unserializer> {
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom("unserializer");
+  }
+
+  inline
+  explicit Unserializer(VM vm, RichNode bytes, UnstableNode& resources);
+
+  inline
+  Unserializer(VM vm, GR gr, Unserializer& from);
+
+public:
+
+  inline
+  UnstableNode getRoot(VM vm);
+
+  inline
+  UnstableNode getValueAt(VM vm, nativeint ref);
+
+  inline
+  StableNode& getFromRef(pb::Ref ref);
+
+  inline
+  UnstableNode getTag(VM vm);
+  
+  inline
+  void setImmediate(VM vm, RichNode bytes, GlobalNode* gnode);
+
+  inline
+  void release(VM vm);
+
+private:
+  pb::Pickle* pickle;
+  StableNode tuple;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Unserializer-implem-decl-after.hh"
+#endif
 }
 
 #endif // MOZART_SERIALIZER_DECL_H

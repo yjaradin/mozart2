@@ -139,6 +139,115 @@ void Serializer::release(VM vm){
   delete pickle;
 }
 
+//////////////////
+// Unserializer //
+//////////////////
+
+#include "Unserializer-implem.hh"
+
+Unserializer::Unserializer(VM vm, RichNode bytes, UnstableNode& resources) {
+  OzListBuilder bRes(vm);
+  size_t size = ozVBSLengthForBuffer(vm, bytes);
+  std::vector<unsigned char> b;
+  ozVBSGet(vm, bytes, size, b);
+  std::string msg(b.begin(), b.end());
+  pickle = new pb::Pickle();
+  pickle->ParseFromString(msg);
+  tuple.init(vm, makeTuple(vm, vm->coreatoms.sharp, pickle->values_size()));
+  auto t = RichNode(tuple).as<Tuple>();
+  for (auto p: pickle->values()) {
+    auto r = p.ref();
+    auto v = p.value();
+    UnstableNode n;
+    if(v.has_integer()) { n = deserialize(vm, this, v.integer()); }
+    else if(v.has_float_()) { n = deserialize(vm, this, v.float_()); }
+    else if(v.has_boolean()) { n = deserialize(vm, this, v.boolean()); }
+    else if(v.has_unit()) { n = deserialize(vm, this, v.unit()); }
+    else if(v.has_atom()) { n = deserialize(vm, this, v.atom()); }
+    else if(v.has_cons()) { n = deserialize(vm, this, v.cons()); }
+    else if(v.has_tuple()) { n = deserialize(vm, this, v.tuple()); }
+    else if(v.has_arity()) { n = deserialize(vm, this, v.arity()); }
+    else if(v.has_record()) { n = deserialize(vm, this, v.record()); }
+    else if(v.has_builtin()) { n = deserialize(vm, this, v.builtin()); }
+    else if(v.has_patmatwildcard()) { n = deserialize(vm, this, v.patmatwildcard()); }
+    else if(v.has_patmatcapture()) { n = deserialize(vm, this, v.patmatcapture()); }
+    else if(v.has_patmatconjunction()) { n = deserialize(vm, this, v.patmatconjunction()); }
+    else if(v.has_patmatopenrecord()) { n = deserialize(vm, this, v.patmatopenrecord()); }
+    else if(v.has_uniquename()) { n = deserialize(vm, this, v.uniquename()); }
+    else if(v.has_unicodestring()) { n = deserialize(vm, this, v.unicodestring()); }
+    else if(v.has_bytestring()) { n = deserialize(vm, this, v.bytestring()); }
+    else if(v.has_resource()) {
+      pb::UUID uuid = v.resource().uuid();
+      GlobalNode* gnode;
+      if(!GlobalNode::get(vm, UUID(uuid.low(), uuid.high()), gnode))
+      {
+        gnode->protocol.init(vm, getFromRef(v.resource().proto()));
+        auto imm = v.resource().immediate();
+        if(imm.has_codearea()) { n = deserializeImmediate(vm, this, gnode, imm.codearea()); }
+        else if(imm.has_abstraction()) { n = deserializeImmediate(vm, this, gnode, imm.abstraction()); }
+        else if(imm.has_namedname()) { n = deserializeImmediate(vm, this, gnode, imm.namedname()); }
+        else if(imm.has_name()) { n = deserializeImmediate(vm, this, gnode, imm.name()); }
+        else if(imm.has_highlevel()) {
+          n = OptVar::build(vm);
+          bRes.push_back(vm, buildSharp(vm, gnode->reified, getFromRef(v.resource().type()), getFromRef(imm.highlevel().ref())));
+        } else {
+          n.init(vm);//TODO make it a failed value
+        }
+        gnode->self.init(vm, n);
+      } else n.init(vm, gnode->self);
+    } else {
+      n.init(vm);//TODO make it a failed value
+    }
+    RichNode(t.getElement(r)).become(vm, n);
+  }
+  resources = bRes.get(vm);
+}
+
+Unserializer::Unserializer(VM vm, GR gr, Unserializer& from)
+  : pickle(from.pickle) {
+  gr->copyStableNode(tuple, from.tuple);
+}
+
+UnstableNode Unserializer::getRoot(VM vm) {
+  return {vm, getFromRef(pickle->root())};
+}
+
+UnstableNode Unserializer::getValueAt(VM vm, nativeint ref) {
+  return {vm, *RichNode(tuple).as<Tuple>().getElement(ref)};
+}
+
+StableNode& Unserializer::getFromRef(pb::Ref ref) {
+  return *RichNode(tuple).as<Tuple>().getElement(ref.id());
+}
+
+UnstableNode Unserializer::getTag(VM vm) {
+  return String::build(vm, newLString(vm, pickle->tag().c_str()));
+}
+
+void Unserializer::setImmediate(VM vm, RichNode bytes, GlobalNode* gnode) {
+  size_t size = ozVBSLengthForBuffer(vm, bytes);
+  std::vector<unsigned char> b;
+  ozVBSGet(vm, bytes, size, b);
+  UnstableNode n;
+  {
+    pb::ImmediateData imm;
+    imm.ParseFromString(std::string(b.begin(), b.end()));
+    if(imm.has_codearea()) { n = deserializeImmediate(vm, this, gnode, imm.codearea()); }
+    else if(imm.has_abstraction()) { n = deserializeImmediate(vm, this, gnode, imm.abstraction()); }
+    else if(imm.has_namedname()) { n = deserializeImmediate(vm, this, gnode, imm.namedname()); }
+    else if(imm.has_name()) { n = deserializeImmediate(vm, this, gnode, imm.name()); }
+    else {
+      n.init(vm);//TODO make it a failed value
+    }
+  }
+  DataflowVariable(gnode->self).bind(vm, RichNode(n));
+}
+
+
+void Unserializer::release(VM vm) {
+  delete pickle;
+}
+
 }
 
 #endif // MOZART_GENERATOR

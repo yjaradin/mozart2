@@ -124,6 +124,8 @@ private:
   LString<unsigned char> _bytes;
 };
 
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::ByteString& from);
+
 #ifndef MOZART_GENERATOR
 #include "ByteString-implem-decl-after.hh"
 #endif

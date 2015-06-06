@@ -130,6 +130,15 @@ Abstraction::Abstraction(VM vm, size_t Gc, GR gr, Abstraction& from):
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), Gc);
 }
 
+Abstraction::Abstraction(VM vm, size_t Gc, Unserializer* un, GlobalNode* gnode, const pb::AbstractionData& from):
+WithHome(vm) {
+  _gnode = gnode;
+  _body.init(vm, un->getFromRef(from.codearea()));
+  _codeAreaCacheValid = false;
+  for (size_t i = 0; i < Gc; i++)
+    getElements(i).init(vm, un->getFromRef(from.gregs().Get(i)));
+}
+
 atom_t Abstraction::getPrintName(VM vm) {
   atom_t result;
   UnstableNode dummy;

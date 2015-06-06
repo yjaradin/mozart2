@@ -105,6 +105,9 @@ public:
   inline
   Tuple(VM vm, size_t width, GR gr, Tuple& from);
 
+  inline
+  Tuple(VM vm, size_t width, Unserializer* un, const pb::Tuple& from);
+
 public:
   StableNode* getLabel() {
     return &_label;
@@ -167,6 +170,9 @@ private:
   StableNode _label;
   size_t _width;
 };
+
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Tuple& from);
 
 #ifndef MOZART_GENERATOR
 #include "Tuple-implem-decl-after.hh"
@@ -280,6 +286,9 @@ private:
   StableNode _elements[2];
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Cons& from);
+
 #ifndef MOZART_GENERATOR
 #include "Cons-implem-decl-after.hh"
 #endif
@@ -308,6 +317,9 @@ public:
 
   inline
   Arity(VM vm, size_t width, GR gr, Arity& from);
+
+  inline
+  Arity(VM vm, size_t width, Unserializer* un, const pb::Arity& from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -356,6 +368,9 @@ private:
   size_t _width;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Arity& from);
+
 #ifndef MOZART_GENERATOR
 #include "Arity-implem-decl-after.hh"
 #endif
@@ -384,6 +399,9 @@ public:
 
   inline
   Record(VM vm, size_t width, GR gr, Record& from);
+
+  inline
+  Record(VM vm, size_t width, Unserializer* un, const pb::Record& from);
 
 public:
   StableNode* getArity() {
@@ -447,6 +465,9 @@ private:
   size_t _width;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Record& from);
+
 #ifndef MOZART_GENERATOR
 #include "Record-implem-decl-after.hh"
 #endif
@@ -475,6 +496,12 @@ public:
   Chunk(VM vm, RichNode underlying):
     WithHome(vm),
     _gnode(nullptr) {
+    _underlying.init(vm, underlying);
+  }
+
+  Chunk(VM vm, RichNode underlying, GlobalNode* gnode):
+    WithHome(vm),
+    _gnode(gnode) {
     _underlying.init(vm, underlying);
   }
 
@@ -527,6 +554,11 @@ private:
   StableNode _underlying;
   GlobalNode* _gnode;
 };
+
+inline
+UnstableNode deserializeImmediate(VM vm, Unserializer* un, GlobalNode* gnode, const pb::ChunkData& from) {
+  return Chunk::build(vm, un->getFromRef(from.record()), gnode);
+}
 
 #ifndef MOZART_GENERATOR
 #include "Chunk-implem-decl-after.hh"

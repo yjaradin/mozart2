@@ -125,6 +125,8 @@ public:
   }
 
 private:
+  friend UnstableNode deserialize(VM vm, Unserializer* un, const pb::Integer& from);
+
   inline
   static UnstableNode shrink(VM vm, const std::shared_ptr<BigIntImplem>& p);
 
@@ -134,6 +136,10 @@ private:
 private:
   std::shared_ptr<BigIntImplem> _value;
 };
+
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Integer& from);
+
 
 #ifndef MOZART_GENERATOR
 #include "BigInt-implem-decl-after.hh"

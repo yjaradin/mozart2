@@ -29,6 +29,7 @@
 
 #include "opcodes.hh"
 #include "builtins-decl.hh"
+#include "serializer-decl.hh"
 
 namespace mozart {
 
@@ -147,6 +148,11 @@ private:
   Builtin* _builtin;
 };
 
+inline
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Builtin& from) {
+  return vm->findBuiltin(from.module().c_str(), from.function().c_str());
+}
+
 #ifndef MOZART_GENERATOR
 #include "BuiltinProcedure-implem-decl-after.hh"
 #endif
@@ -174,6 +180,9 @@ public:
 
   inline
   Abstraction(VM vm, size_t Gc, GR gr, Abstraction& from);
+  
+  inline
+  Abstraction(VM vm, size_t Gc, Unserializer* un, GlobalNode* gnode, const pb::AbstractionData& from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -262,6 +271,11 @@ private:
   size_t _Xcount;
   StaticArray<StableNode> _Ks;
 };
+
+inline
+UnstableNode deserializeImmediate(VM vm, Unserializer* un, GlobalNode* gnode, const pb::AbstractionData& from) {
+  return Abstraction::build(vm, from.gregs_size(), un, gnode, from);
+}
 
 #ifndef MOZART_GENERATOR
 #include "Abstraction-implem-decl-after.hh"

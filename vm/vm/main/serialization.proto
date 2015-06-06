@@ -40,8 +40,8 @@ message Record {
   repeated Ref fields = 2;
 }
 message Builtin {
-  optional Ref module = 1;
-  optional Ref function = 2;
+  optional string module = 1;
+  optional string function = 2;
 }
 message PatMatWildcard {
 }
@@ -56,19 +56,19 @@ message PatMatOpenRecord {
   repeated Ref fields = 2;
 }
 message UniqueName {
-  optional Ref name = 1;
+  optional string name = 1;
 }
 message UnicodeString {
   optional string value = 1;
+}
+message ByteString {
+  optional bytes value = 1;
 }
 message Resource {
   optional UUID uuid = 1;
   optional Ref proto = 2;
   optional Ref type = 3;
   optional ImmediateData immediate = 4;
-}
-message ByteString {
-  optional bytes value = 1;
 }
 
 message ImmediateData {

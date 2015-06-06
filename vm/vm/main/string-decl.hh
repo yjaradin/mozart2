@@ -128,6 +128,8 @@ private:
   LString<char> _string;
 };
 
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::UnicodeString& from);
+
 #ifndef MOZART_GENERATOR
 #include "String-implem-decl-after.hh"
 #endif

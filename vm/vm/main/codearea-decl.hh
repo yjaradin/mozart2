@@ -54,6 +54,9 @@ public:
   inline
   CodeArea(VM vm, size_t Kc, GR gr, CodeArea& from);
 
+  inline
+  CodeArea(VM vm, size_t Kc, Unserializer* un, GlobalNode* gnode, const pb::CodeAreaData& from);
+
 public:
   // Requirement for StoredWithArrayOf
   size_t getArraySizeImpl() {
@@ -115,6 +118,11 @@ private:
   atom_t _printName;
   StableNode _debugData;
 };
+
+inline
+UnstableNode deserializeImmediate(VM vm, Unserializer* un, GlobalNode* gnode, const pb::CodeAreaData& from) {
+  return CodeArea::build(vm, from.kregs_size(), un, gnode, from);
+}
 
 #ifndef MOZART_GENERATOR
 #include "CodeArea-implem-decl-after.hh"

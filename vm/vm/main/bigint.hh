@@ -142,6 +142,10 @@ std::shared_ptr<BigIntImplem> BigInt::coerce(VM vm, RichNode value) {
   }
 }
 
+UnstableNode deserialize(VM vm, Unserializer* un, const pb::Integer& from) {
+  return BigInt::shrink(vm, vm->getEnvironment().newBigIntImplem(vm, from.value()));
+}
+
 }
 
 #endif // MOZART_GENERATOR

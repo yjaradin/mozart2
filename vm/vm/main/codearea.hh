@@ -70,6 +70,18 @@ CodeArea::CodeArea(VM vm, size_t Kc, GR gr, CodeArea& from) {
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), Kc);
 }
 
+CodeArea::CodeArea(VM vm, size_t Kc, Unserializer* un, GlobalNode* gnode, const pb::CodeAreaData& from)
+: _gnode(gnode), _size(from.instrs_size() * sizeof(ByteCode)), _arity(from.arity()),
+  _Xcount(from.xcount()), _Kc(Kc), _printName(vm->getAtom(from.printname())) {
+
+  _debugData.init(vm, un->getFromRef(from.debug()));
+  for (size_t i = 0; i < Kc; i++)
+    getElements(i).init(vm, un->getFromRef(from.kregs().Get(i)));
+  _codeBlock = new (vm) ByteCode[_size / sizeof(ByteCode)];
+  for (int i = 0; i < from.instrs_size(); i++)
+    _codeBlock[i] = from.instrs().Get(i);
+}
+
 void CodeArea::getCodeAreaInfo(
   VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Ks) {
