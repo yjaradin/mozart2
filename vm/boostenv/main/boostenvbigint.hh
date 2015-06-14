@@ -93,6 +93,25 @@ void BoostBigInt::printReprToStream(VM vm, std::ostream& out, int depth, int wid
   }
 }
 
+bool BoostBigInt::asInt64(std::int64_t& dest) {
+  if ((value() >= std::numeric_limits<std::int64_t>::min())
+   && (value() <= std::numeric_limits<std::int64_t>::max())) {
+     dest = value().convert_to<std::int64_t>();
+     return true;
+   }
+   return false;
+}
+
+bool BoostBigInt::asUInt64(std::uint64_t& dest) {
+  if ((value() >= std::numeric_limits<std::uint64_t>::min())
+   && (value() <= std::numeric_limits<std::uint64_t>::max())) {
+     dest = value().convert_to<std::uint64_t>();
+     return true;
+   }
+   return false;
+}
+
+
 } }
 
 #endif

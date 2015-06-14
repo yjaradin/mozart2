@@ -91,6 +91,12 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
+  inline 
+  bool asInt64(std::int64_t& dest);
+
+  inline 
+  bool asUInt64(std::uint64_t& dest);
+
 public:
   template <class T>
   static std::shared_ptr<BigIntImplem> make_shared_ptr(const T& value) {

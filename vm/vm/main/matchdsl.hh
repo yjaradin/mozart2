@@ -279,6 +279,45 @@ struct OzValueToPrimitiveValue<size_t> {
       } else {
         return false;
       }
+    } else if (value.is<BigInt>()) {
+      uint64_t v;
+      bool res = value.as<BigInt>().asUInt64(v);
+      primitive = v;
+      return res;
+    } else {
+      return false;
+    }
+  }
+};
+
+template <>
+struct OzValueToPrimitiveValue<mozart::internal::int64IfDifferentFromNativeInt> {
+  static bool call(VM vm, RichNode value, std::int64_t& primitive) {
+    if (value.is<SmallInt>()) {
+      nativeint intValue = value.as<SmallInt>().value();
+      primitive = (int64_t) intValue;
+      return true;
+    } else if (value.is<BigInt>()) {
+      return value.as<BigInt>().asInt64(primitive);
+    } else {
+      return false;
+    }
+  }
+};
+
+template <>
+struct OzValueToPrimitiveValue<mozart::internal::uint64IfDifferentFromSizeT> {
+  static bool call(VM vm, RichNode value, std::uint64_t& primitive) {
+    if (value.is<SmallInt>()) {
+      nativeint intValue = value.as<SmallInt>().value();
+      if (intValue > 0) {
+        primitive = (int64_t) intValue;
+        return true;
+      } else {
+        return false;
+      }
+    } else if (value.is<BigInt>()) {
+      return value.as<BigInt>().asUInt64(primitive);
     } else {
       return false;
     }

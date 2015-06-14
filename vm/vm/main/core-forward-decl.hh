@@ -207,6 +207,14 @@ namespace internal {
     operator nativeint() { return 0; }
   };
 
+  struct AlternativeToUInt64 {
+    operator nativeint() { return 0; }
+  };
+
+  struct AlternativeToUInt32 {
+    operator nativeint() { return 0; }
+  };
+
   typedef typename std::conditional<
     std::is_same<int, nativeint>::value,
     AlternativeToInt, int>::type intIfDifferentFromNativeInt;
@@ -214,6 +222,14 @@ namespace internal {
   typedef typename std::conditional<
     std::is_same<std::int64_t, nativeint>::value,
     AlternativeToInt64, std::int64_t>::type int64IfDifferentFromNativeInt;
+
+  typedef typename std::conditional<
+    std::is_same<std::uint64_t, size_t>::value,
+    AlternativeToUInt64, std::uint64_t>::type uint64IfDifferentFromSizeT;
+
+  typedef typename std::conditional<
+    std::is_same<std::uint32_t, size_t>::value,
+    AlternativeToUInt32, std::uint32_t>::type uint32IfDifferentFromSizeT;
 }
 
 }

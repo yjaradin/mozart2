@@ -111,6 +111,14 @@ public:
     return value()->doubleValue();
   }
 
+  bool asInt64(std::int64_t& dest) {
+    return value()->asInt64(dest);
+  }
+
+  bool asUInt64(std::uint64_t& dest) {
+    return value()->asUInt64(dest);
+  }
+
   std::string str() {
     return value()->str();
   }

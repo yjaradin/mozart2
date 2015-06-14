@@ -72,6 +72,24 @@ UnstableNode build(VM vm, internal::int64IfDifferentFromNativeInt value) {
   }
 }
 
+inline
+UnstableNode build(VM vm, internal::uint64IfDifferentFromSizeT value) {
+  if (value <= SmallInt::max()) {
+    return SmallInt::build(vm, (nativeint) value);
+  } else {
+    std::ostringstream ss;
+    ss << value;
+    return BigInt::build(vm, ss.str());
+  }
+}
+
+static_assert(sizeof(size_t) >= sizeof(std::uint32_t), "size_t is too small");
+
+inline
+UnstableNode build(VM vm, internal::uint32IfDifferentFromSizeT value) {
+  return build(vm, (size_t)value);
+}
+
 template <typename T>
 inline
 auto build(VM vm, T value)

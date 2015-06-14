@@ -47,6 +47,9 @@ public:
 
   virtual std::string str() = 0;
   virtual void printReprToStream(VM vm, std::ostream& out, int depth, int width) = 0;
+
+  virtual bool asInt64(std::int64_t& dest) = 0;
+  virtual bool asUInt64(std::uint64_t& dest) = 0;
 };
 
 }
