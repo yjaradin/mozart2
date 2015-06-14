@@ -106,6 +106,16 @@ public:
       result = build(vm, ozVBSLength(vm, value));
     }
   };
+
+  class GetByteAt : public Builtin<GetByteAt> {
+  public:
+    GetByteAt() : Builtin("getByteAt") {}
+
+    static void call(VM vm, In value, In at, Out result) {
+      size_t pos = getArgument<size_t>(vm, at);
+      result = build(vm, ozVBSGetAt(vm, value, pos));
+    }
+  };
 };
 
 }

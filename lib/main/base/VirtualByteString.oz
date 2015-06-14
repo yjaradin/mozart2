@@ -32,4 +32,5 @@ VirtualByteString = virtualByteString(
            end
    toListWithTail: Boot_VirtualByteString.toByteList
    length: Boot_VirtualByteString.length
+   get: Boot_VirtualByteString.getByteAt
 )
