@@ -149,5 +149,211 @@ define
 	 {@localSite dispatchMessage(self Msg)}
       end
    end
+
+
+
+
+
+   
+   fun{GetProtoInt Vbs Idx V ?LIdx}
+      B = {VirtualByteString.get Header Idx} in
+      if B<128 then
+	 LIdx=Idx
+	 V+B
+      else
+	 {GetProtoInt Vbs Idx+1 (V*128)+B-128 LIdx}
+      end
+   end
+   Magic = [&D &s &s 0xDE 0xC0 0xDE &P &B &u &f 0xF0 0x0D &v &1 &. &0]
+   MagicLength = 8
+   MsgKind = {VirtualString.toCompactString "mozart.pb.Stream"}
+   class HighLevelChannel
+      attr
+	 chan
+	 closed: false
+      meth init(Channel)
+	 chan := Channel
+	 thread
+	    if {Channel send(Magic error:$)} then {self close} end
+	    if {VirtualByteString.toList {self receiveBytes(MagicLength $)}} \= Magic then {self close} end
+	    {self send('Hello'())}
+	    for until:{self closed($)}
+	       H in
+	       {self receiveBytes(6 Header)}
+	       if {VirtualByteString.get Header 0}\=10 then {self close()} end
+	       H = {GetProtoInt Header 1 0 T}
+	       if H mod 8 \= 2 then
+		  {self close}
+	       else
+		  {self receivedBytes(Header#{self receiveBytes(H div 8 - 5 + T $)})}
+	       end
+	    end
+	 end
+      end
+      meth close()
+	 {@chan close()}
+	 closed := true
+      end
+      meth closed($)
+	 @closed
+      end
+      meth receiveBytes(Size ?Vbs)
+	 if {Channel receive(MagicTest size:MagicLength error:$)} then {self close} end
+      end
+      meth receivedBytes(Vbs)
+	 if @closed then skip else
+	    {self received({PBuf.bytesToRecord P MsgKind Vbs}.elements.1)}
+	 end
+      end
+   end
+
+   proc{Acks Dic Miss Last}
+      proc{Loop Keys Miss Last}
+	 case Keys#Miss
+	 of _#nil then
+	    for K in Keys while:K=<Last do {Dictionary.remove Dic K} end
+	 [] nil#_ then
+	    skip
+	 [] (Hk|Tk)#(Hm|Tm) then
+	    if Hk>Last then
+	       skip
+	    elseif Hk<Hm then
+	       {Dictionary.remove Dic Hk}
+	       {Loop Tk Miss Last}
+	    elseif Hk==Hm then
+	       {Loop Tk Tm Last}
+	    else
+	       {System.showError "DSS: Missing message is not in flight!"}
+	       {Loop Tk Tm Last} %Should never happen!
+	    end
+	 end
+      end
+   in
+      {Loop {Sort {Dictionary.keys Dic} Value.'<'} Miss Last}
+   end
+   class SiteMessenger
+      attr
+	 localStatus: 'StatusClean'
+	 remoteStatus: 'StatusClean'
+	 knownLocalStatus: 'StatusClean'
+	 payloadToSend
+	 messageToSend
+	 remoteMonotonic: 0
+	 lastRetransmit: 0
+
+	 inFlight
+	 missing
+	 lastReceived:-1
+      meth init()
+	 @payloadToSend={New BoundedBuffer init(100)}
+	 @messageToSend={New BoundedBuffer init(100)}
+	 @inFlight={Dictionary.new}
+	 @missing={Dictionary.new}
+      end
+      meth send(Payload)
+	 {@payloadToSend put(Payload)}
+	 if @localStatus == 'StatusClean' then
+	    {self NewStatus('StatusInit')}
+	 end
+      end
+      meth receive(Message)
+	 if Message.senderMonotonic > remoteMonotonic then
+	    remoteMonotonic := Message.senderMonotonic
+	    knownLocalStatus := Message.receiverStatus
+	    remoteStatus := Message.senderStatus
+	    
+	    {Acks @inFlight Message.missing Message.lastSeen}
+	    for P in Message.payloads do
+	       if P.id == @lastReceived+1 then
+		  {@upper receive(P.pickle)}
+	       elseif P.id<@lastReceived andthen {HasFeature @missing P.id} then
+		  {Dictionary.remove @missing P.id}
+		  {@upper receive(P.pickle)}
+	       elseif P.id>@lastReceived+1 then
+		  for I in @lastReceived+1..P.id-1 do @missing.I:=unit end
+		  {@upper receive(P.pickle)}
+	       end
+	    end
+	    
+	    if @localStatus == @knownLocalStatus andthen
+	       @localStatus == @remoteStatus then
+	       %coherent state
+	       case @localStatus
+	       of 'StatusClean' andthen {@payloadToSend isNonEmpty($)} then
+		  {self NewStatus('StatusInit')}
+	       [] 'StatusClean' then
+		  {self DropChannels()}
+	       [] 'StatusInit' andthen {@payloadToSend isNonEmpty($)} then
+		  {self NewStatus('StatusWorking')}
+	       [] 'StatusInit' then
+		  skip
+	       [] 'StatusWorking' andthen {@payloadToSend isNonEmpty($)} then
+		  {self ForceMessage()}
+	       [] 'StatusWorking' then
+		  skip
+	       [] 'StatusClosing' then
+		  skip
+	       [] 'StatusClosed' andthen {@payloadToSend isNonEmpty($)} then
+		  {self NewStatus('StatusInit')}
+	       [] 'StatusClosed' then
+		  {self NewStatus('StatusClean')}
+	       [] 'StatusBroken' then
+		  {self DropChannels()}
+	       end
+	    elseif @knownLocalStatus \= @localStatus then
+	       {self ForceMessage()}
+	    elsecase @localStatus#@remoteStatus
+	    of 'StatusClean'#'StatusInit' then
+	       {self NewStatus(@remoteStatus)}
+	    [] 'StatusInit'#'StatusWorking' then
+	       {self NewStatus(@remoteStatus)}
+	    [] 'StatusWorking'#'StatusClosing' then
+	       {self NewStatus(@remoteStatus)}
+	    [] 'StatusClosing'#'StatusClosed' then
+	       {self ForceMessage()}
+	    [] 'StatusClosed'#'StatusClean' andthen {@payloadToSend isNonEmpty($)} then
+	       {self NewStatus('StatusInit')}
+	    [] 'StatusClosed'#'StatusClean' then
+	       {self NewStatus(@remoteStatus)}
+	    [] 'StatusClosed'#'StatusInit' then
+	       {self NewStatus(@remoteStatus)}
+
+	    [] _#'StatusBroken' then
+	       {self NewStatus(@remoteStatus)}
+	    [] 'StatusBroken'#_ then
+	       {self ForceMessage()}
+
+	    [] 'StatusClosed'#'StatusClosing' then
+	       {self ForceMessage()}
+	    else
+	       {self NewStatus('StatusBroken')}
+	    end
+	    if @localStatus\='StatusBroken' then
+	       if {HasFeature Message missing} then
+		  if Message.receiverMonotonic >= @lastRetransmit then
+		     {self ForceRetransmit(Message.missing)}
+		  else
+		     {self ForceMessage()}
+		  end
+	       end
+	    end
+	 end
+      end
+      meth NewStatus(NewS)
+	 OldS = localStatus := NewS in
+	 if OldS!=NewS then
+	    {self ForceMessage()}
+	 end
+      end
+      meth ForceRetransmit()
+      end
+      meth ForceMessage()
+	 {@messageToSend put('SiteMessage'(senderStatus:@localStatus
+					   receiverStatus:@remoteStatus
+					   senderMonotonic:{NextMonotonic}
+					   receiverMonotonic:@remoteMonotonic
+					   lastSeen:@lastReceived))}
+      end
+   end
    
 end
