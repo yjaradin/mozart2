@@ -138,13 +138,3 @@ message Pickle {
   optional Ref root = 2;
   repeated RefValue values = 3;
 }
-
-message Bundle {
-// oneof bundle_kind {
-  optional Pickle pickle = 1;
-// }
-}
-
-message Stream {
-  repeated Bundle elements = 1;
-}
