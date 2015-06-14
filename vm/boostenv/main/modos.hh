@@ -580,14 +580,14 @@ private:
   template <typename T, typename P>
   static void baseSocketConnectionRead(
     VM vm, BaseSocketConnection<T, P>* connection,
-    In count, In tail, Out status) {
+    In count, Out status) {
 
     // Fetch the count
     auto intCount = getArgument<nativeint>(vm, count);
 
     // 0 size
     if (intCount <= 0) {
-      status = buildTuple(vm, "succeeded", 0, tail);
+      status = buildTuple(vm, "succeeded", 0, buildNil(vm));
       return;
     }
 
@@ -595,10 +595,9 @@ private:
     size_t size = (size_t) intCount;
     connection->getReadData().resize(size);
 
-    auto tailNode = BoostVM::forVM(vm).allocAsyncIONode(tail.getStableRef(vm));
     auto statusNode = BoostVM::forVM(vm).createAsyncIOFeedbackNode(status);
 
-    connection->startAsyncReadSome(tailNode, statusNode);
+    connection->startAsyncReadSome(statusNode);
   }
 
   template <typename T, typename P>
@@ -668,9 +667,9 @@ public:
   public:
     TCPConnectionRead(): Builtin("tcpConnectionRead") {}
 
-    static void call(VM vm, In connection, In count, In tail, Out status) {
+    static void call(VM vm, In connection, In count, Out status) {
       baseSocketConnectionRead(vm, getTCPConnectionArg(vm, connection),
-                               count, tail, status);
+                               count, status);
     }
   };
 
@@ -1130,9 +1129,9 @@ public:
   public:
     PipeConnectionRead(): Builtin("pipeConnectionRead") {}
 
-    static void call(VM vm, In connection, In count, In tail, Out status) {
+    static void call(VM vm, In connection, In count, Out status) {
       baseSocketConnectionRead(vm, getPipeConnectionArg(vm, connection),
-                               count, tail, status);
+                               count, status);
     }
   };
 
@@ -1170,7 +1169,7 @@ public:
   public:
     PipeConnectionRead(): Builtin("pipeConnectionRead") {}
 
-    static void call(VM vm, In connection, In count, In tail, Out status) {
+    static void call(VM vm, In connection, In count, Out status) {
       raiseError(vm, "notImplemented", "Pipes on Windows");
     }
   };

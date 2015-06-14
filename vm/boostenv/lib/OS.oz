@@ -69,6 +69,7 @@ export
    tcpAcceptorClose: TCPAcceptorClose
    tcpConnect: TCPConnect
    tcpConnectionRead: TCPConnectionRead
+   tcpConnectionReadCompact: TCPConnectionReadCompact
    tcpConnectionWrite: TCPConnectionWrite
    tcpConnectionShutdown: TCPConnectionShutdown
    tcpConnectionClose: TCPConnectionClose
@@ -81,6 +82,7 @@ export
    SpawnProcess
    SpawnProcessAndPipe
    PipeConnectionRead
+   PipeConnectionReadCompact
    PipeConnectionWrite
    PipeConnectionShutdown
    PipeConnectionClose
@@ -181,9 +183,17 @@ define
    end
 
    proc {TCPConnectionRead Connection Count ?Head Tail ?ReadCount}
-      case {Boot_OS.tcpConnectionRead Connection Count Tail}
+      case {Boot_OS.tcpConnectionRead Connection Count}
       of succeeded(C H) then
-         Head = H
+         Head = {VirtualByteString.toListWithTail H Tail}
+         ReadCount = C
+      end
+   end
+
+   proc {TCPConnectionReadCompact Connection Count ?Result ?ReadCount}
+      case {Boot_OS.tcpConnectionRead Connection Count}
+      of succeeded(C H) then
+         Result = H
          ReadCount = C
       end
    end
@@ -205,9 +215,17 @@ define
    SpawnProcessAndPipe = Boot_OS.pipe
 
    proc {PipeConnectionRead Connection Count ?Head Tail ?ReadCount}
-      case {Boot_OS.pipeConnectionRead Connection Count Tail}
+      case {Boot_OS.pipeConnectionRead Connection Count}
       of succeeded(C H) then
-         Head = H
+         Head = {VirtualByteString.toListWithTail H Tail}
+         ReadCount = C
+      end
+   end
+
+   proc {PipeConnectionReadCompact Connection Count ?Result ?ReadCount}
+      case {Boot_OS.pipeConnectionRead Connection Count}
+      of succeeded(C H) then
+         Result = H
          ReadCount = C
       end
    end

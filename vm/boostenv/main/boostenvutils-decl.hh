@@ -71,12 +71,10 @@ public:
   }
 
   inline
-  void startAsyncRead(const ProtectedNode& tailNode,
-                      const ProtectedNode& statusNode);
+  void startAsyncRead(const ProtectedNode& statusNode);
 
   inline
-  void startAsyncReadSome(const ProtectedNode& tailNode,
-                          const ProtectedNode& statusNode);
+  void startAsyncReadSome(const ProtectedNode& statusNode);
 
   inline
   void startAsyncWrite(const ProtectedNode& statusNode);
@@ -85,7 +83,6 @@ protected:
   inline
   void readHandler(const boost::system::error_code& error,
                    size_t bytes_transferred,
-                   const ProtectedNode& tailNode,
                    const ProtectedNode& statusNode);
 
 protected:

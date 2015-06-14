@@ -44,12 +44,12 @@ BaseSocketConnection<T, P>::BaseSocketConnection(BoostEnvironment& env, VMIdenti
 
 template <typename T, typename P>
 void BaseSocketConnection<T, P>::startAsyncRead(
-  const ProtectedNode& tailNode, const ProtectedNode& statusNode) {
+  const ProtectedNode& statusNode) {
 
   pointer self = this->shared_from_this();
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
-    self->readHandler(error, bytes_transferred, tailNode, statusNode);
+    self->readHandler(error, bytes_transferred, statusNode);
   };
 
   boost::asio::async_read(_socket, boost::asio::buffer(_readData), handler);
@@ -57,12 +57,12 @@ void BaseSocketConnection<T, P>::startAsyncRead(
 
 template <typename T, typename P>
 void BaseSocketConnection<T, P>::startAsyncReadSome(
-  const ProtectedNode& tailNode, const ProtectedNode& statusNode) {
+  const ProtectedNode& statusNode) {
 
   pointer self = this->shared_from_this();
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
-    self->readHandler(error, bytes_transferred, tailNode, statusNode);
+    self->readHandler(error, bytes_transferred, statusNode);
   };
 
   _socket.async_read_some(boost::asio::buffer(_readData), handler);
@@ -92,26 +92,21 @@ void BaseSocketConnection<T, P>::startAsyncWrite(
 template <typename T, typename P>
 void BaseSocketConnection<T, P>::readHandler(
   const boost::system::error_code& error, size_t bytes_transferred,
-  const ProtectedNode& tailNode, const ProtectedNode& statusNode) {
+  const ProtectedNode& statusNode) {
 
   pointer self = this->shared_from_this();
   env.postVMEvent(vm, [=] (BoostVM& boostVM) {
     if (!error) {
       VM vm = boostVM.vm;
-
-      UnstableNode head(vm, *tailNode);
-      for (size_t i = bytes_transferred; i > 0; i--)
-        head = buildCons(vm, (nativeint) (unsigned char) _readData[i-1],
-                         std::move(head));
-
       boostVM.bindAndReleaseAsyncIOFeedbackNode(
-        statusNode, "succeeded", bytes_transferred, std::move(head));
+        statusNode, "succeeded", bytes_transferred,
+        UnstableNode::build<ByteString>(vm, 
+          newLString(vm, reinterpret_cast<unsigned char*>(_readData.data()),
+            bytes_transferred)));
     } else {
       boostVM.raiseAndReleaseAsyncIOFeedbackNode(
         statusNode, "socketOrPipe", "read", error.value());
     }
-
-    boostVM.releaseAsyncIONode(tailNode);
   });
 }
 
