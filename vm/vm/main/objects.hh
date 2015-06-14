@@ -152,7 +152,7 @@ UnstableNode Object::attrExchange(RichNode self, VM vm, RichNode attribute,
 
 size_t Object::getAttrOffset(RichNode self, VM vm, RichNode attribute) {
   size_t result;
-  if (RichNode(_attrArity).as<Arity>().lookupFeature(vm, attribute, result)) {
+  if ((_attrCount > 0) && RichNode(_attrArity).as<Arity>().lookupFeature(vm, attribute, result)) {
     return result;
   } else {
     raiseError(vm, "object", "@", self, attribute);
