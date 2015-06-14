@@ -610,6 +610,18 @@ void ozVSGet(VM vm, RichNode vs, std::vector<char>& output) {
 
 /**
  * Get the actual value of a VirtualString
+ * If ozVSLengthForBuffer() has been called before for the same vs, this
+ * function is guaranteed not to throw any Mozart exception.
+ */
+inline
+std::string ozVSGetAsStdString(VM vm, RichNode vs) {
+  std::vector<char> tmp;
+  ozVSGet(vm, vs, tmp);
+  return std::string(tmp.begin(), tmp.end());
+}
+
+/**
+ * Get the actual value of a VirtualString
  * Because ozVSLengthForBuffer() must have been called prior to calling this
  * function, it is guaranteed not to throw any Mozart exception.
  * @param bufSize Size of the buffer returned by ozVSLengthForBuffer()

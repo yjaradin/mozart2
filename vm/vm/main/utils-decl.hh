@@ -183,6 +183,9 @@ inline
 void ozVSGet(VM vm, RichNode vs, std::vector<char>& output);
 
 inline
+std::string ozVSGetAsStdString(VM vm, RichNode vs);
+
+inline
 void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::vector<char>& output);
 
 template <typename C>
