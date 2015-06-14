@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2015, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,42 +22,51 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_COREDATATYPES_DECL_H
-#define MOZART_COREDATATYPES_DECL_H
+#ifndef MOZART_MODPROTOBUF_H
+#define MOZART_MODPROTOBUF_H
 
-#include "mozartcore-decl.hh"
+#include "../mozartcore.hh"
 
-#include "datatypeshelpers-decl.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bigint-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "protobuf-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedgnode-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "serializer-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
-#include "weakrefs-decl.hh"
+namespace builtins {
 
-#endif // MOZART_COREDATATYPES_DECL_H
+class ModProtobuf: public Module {
+public:
+  ModProtobuf(): Module("Protobuf") {}
+
+  class NewPool: public Builtin<NewPool> {
+  public:
+    NewPool(): Builtin("newPool") {}
+    static void call(VM vm, Out result) {
+      result = PBufPool::build(vm, true);
+    }
+  };
+
+  class BytesToRecord: public Builtin<BytesToRecord> {
+  public:
+    BytesToRecord(): Builtin("bytesToRecord") {}
+    static void call(VM vm, In pool, In type, In msg, Out result) {
+      result = safeGet<PBufPool>(vm, pool, "pool").bytesToRecord(vm, type, msg);
+    }
+  };
+
+  class RecordToBytes: public Builtin<RecordToBytes> {
+  public:
+    RecordToBytes(): Builtin("recordToBytes") {}
+    static void call(VM vm, In pool, In type, In msg, Out result) {
+      result = safeGet<PBufPool>(vm, pool, "pool").recordToBytes(vm, type, msg);
+    }
+  };
+
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // MOZART_MODPROTOBUF_H

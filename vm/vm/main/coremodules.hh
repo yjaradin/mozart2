@@ -51,6 +51,7 @@
 #include "modules/modport.hh"
 #include "modules/modprocedure.hh"
 #include "modules/modproperty.hh"
+#include "modules/modprotobuf.hh"
 #include "modules/modrecord.hh"
 #include "modules/modreflection.hh"
 #include "modules/modserializer.hh"

@@ -47,6 +47,7 @@
 #include "names.hh"
 #include "objects.hh"
 #include "port.hh"
+#include "protobuf.hh"
 #include "records.hh"
 #include "reflectivetypes.hh"
 #include "reifiedgnode.hh"
