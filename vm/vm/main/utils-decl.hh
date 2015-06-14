@@ -232,6 +232,9 @@ void ozVBSGet(VM vm, RichNode vbs, size_t bufSize, std::vector<C>& output);
 inline
 size_t ozVBSLength(VM vm, RichNode vs);
 
+inline
+nativeint ozVBSGetAt(VM vm, RichNode vbs, size_t& pos);
+
 ////////////////////////////////
 // Port-like usage of streams //
 ////////////////////////////////

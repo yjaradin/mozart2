@@ -545,6 +545,41 @@ bool ozVBSGetNoRaise(VM vm, RichNode vbs, std::vector<C>& output) {
   }
 }
 
+inline
+nativeint ozVBSGetAt(VM vm, RichNode vbs, size_t& pos) {
+  using namespace internal;
+  using namespace patternmatching;
+  size_t partCount;
+  StaticArray<StableNode> parts;
+  nativeint result = -1;
+
+  if (matchesVariadicSharp(vm, vbs, partCount, parts)) {
+    for (size_t i = 0; i < partCount; ++i) {
+      result = ozVBSGetAt(vm, parts[i], pos);
+      if (result != -1) return result;
+    }
+    return result;
+  } else if (matchesCons(vm, vbs, wildcard(), wildcard())) {
+    bool listok = ozListForEachNoRaise(vm, vbs,
+      [vm, &pos, &result] (unsigned char b) {
+        if (pos == 0) result = b; else pos--;
+      });
+    if(!listok) return -2;
+    return result;
+  } else if (matches(vm, vbs, vm->coreatoms.nil)) {
+    return -1;
+  } else if (vbs.is<ByteString>()) {
+    auto& value = vbs.as<ByteString>().value();
+    if((size_t)value.length > pos)
+      result = value.string[pos];
+    else
+      pos -= value.length;
+    return result;
+  } else {
+    return -2;
+  }
+}
+
 /**
  * Test whether an Oz value is a VirtualString
  */
