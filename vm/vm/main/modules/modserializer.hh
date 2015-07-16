@@ -164,6 +164,16 @@ public:
       un.release(vm);
     }
   };
+  class GetGNodeAndType: public Builtin<GetGNodeAndType> {
+  public:
+    GetGNodeAndType(): Builtin("getGNodeAndType") {}
+    static void call(VM vm, In value, Out gnode, Out type) {
+      GlobalNode* gn = value.type()->globalize(vm, value);
+      value.update();
+      gnode.init(vm, gn->reified);
+      type = build(vm, value.type()->getTypeAtom(vm));
+    }
+  };
 };
 
 }
