@@ -59,6 +59,11 @@ set(OTHER_LIBRARY_FUNCTORS
     "${MOZART_LIB_DIR}/dp/Serialization.oz"
     "${MOZART_LIB_DIR}/dp/Site.oz"
     "${MOZART_LIB_DIR}/dp/Protocol.oz"
+    "${MOZART_LIB_DIR}/dp/Channel.oz"
+    "${MOZART_LIB_DIR}/dp/Connection.oz"
+    "${MOZART_LIB_DIR}/dp/DPUtils.oz"
+    "${MOZART_LIB_DIR}/dp/DP.oz"
+    "${MOZART_LIB_DIR}/dp/DPVM.oz"
     "${MOZART_DIR}/vm/boostenv/lib/VM.oz")
 
 # ---------------------------------------------------------------------------- #
