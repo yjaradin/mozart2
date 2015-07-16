@@ -50,12 +50,28 @@ public:
     }
   };
 
-  class NewWithGNode: public Builtin<NewWithGNode> {
+  class NewInGNode: public Builtin<NewInGNode> {
   public:
-    NewWithGNode(): Builtin("newWithGNode") {}
+    NewInGNode(): Builtin("newInGNode") {}
 
-    static void call(VM vm, In gnode, Out stream, Out result) {
-      result = Port::build(vm, getArgument<GlobalNode*>(vm, gnode), stream);
+    static void call(VM vm, In gnode, In proxyPort, Out result) {
+      GlobalNode* gn = getArgument<GlobalNode*>(vm, gnode);
+      RichNode s(gn->self);
+      if (s.isTransient()) {
+        s.become(vm, DistributedPort::build(vm, gn, proxyPort));
+        result = build(vm, true);
+      } else {
+        result = build(vm, false);
+      }
+    }
+  };
+
+  class Zombify: public Builtin<Zombify> {
+  public:
+    Zombify(): Builtin("zombify") {}
+
+    static void call(VM vm, In value, In proxyPort, Out directPort) {
+      value.as<Port>().zombify(vm, proxyPort, directPort);
     }
   };
 

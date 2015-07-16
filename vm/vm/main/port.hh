@@ -42,9 +42,8 @@ Port::Port(VM vm, UnstableNode& stream): WithHome(vm), _gnode(nullptr) {
   stream.copy(vm, _stream);
 }
 
-Port::Port(VM vm, GlobalNode* gnode, UnstableNode& stream): WithHome(vm), _gnode(gnode) {
-  _stream = ReadOnlyVariable::build(vm);
-  stream.copy(vm, _stream);
+Port::Port(VM vm, RichNode stream): WithHome(vm), _gnode(nullptr) {
+  _stream.copy(vm, stream);
 }
 
 Port::Port(VM vm, GR gr, Port& from): WithHome(vm, gr, from) {
@@ -70,10 +69,52 @@ UnstableNode Port::sendReceive(VM vm, RichNode value) {
   return result;
 }
 
+void Port::zombify(RichNode self, VM vm, RichNode proxyPort, UnstableNode& directPort) {
+  directPort = Port::build(vm, RichNode(_stream));
+  self.become(vm, DistributedPort::build(vm, _gnode, proxyPort));
+}
+
 GlobalNode* Port::globalize(RichNode self, VM vm) {
   if (_gnode == nullptr) {
     _gnode = GlobalNode::make(vm, self, vm->coreatoms.port);
   }
+  return _gnode;
+}
+
+/////////////////////
+// DistributedPort //
+/////////////////////
+
+#include "DistributedPort-implem.hh"
+
+DistributedPort::DistributedPort(VM vm, GlobalNode* gnode, RichNode proxyPort): _gnode(gnode) {
+  _proxyPort.init(vm, proxyPort);
+  _sync = Unit::build(vm);
+}
+
+DistributedPort::DistributedPort(VM vm, GR gr, DistributedPort& from) {
+  gr->copyGNode(_gnode, from._gnode);
+  gr->copyStableNode(_proxyPort, from._proxyPort);
+  gr->copyUnstableNode(_sync, from._sync);
+}
+
+void DistributedPort::send(VM vm, RichNode value) {
+  if(RichNode(_sync).isTransient()) waitFor(vm, _sync);
+  _sync = OptVar::build(vm);
+  UnstableNode t = buildTuple(vm, "portSend", value, _sync);
+  PortLike(_proxyPort).send(vm, t);
+}
+
+UnstableNode DistributedPort::sendReceive(VM vm, RichNode value) {
+  if(RichNode(_sync).isTransient()) waitFor(vm, _sync);
+  _sync = OptVar::build(vm);
+  auto result = OptVar::build(vm);
+  UnstableNode t = buildTuple(vm, "portSendRecv", value, result, _sync);
+  PortLike(_proxyPort).send(vm, t);
+  return result;
+}
+
+GlobalNode* DistributedPort::globalize(RichNode self, VM vm) {
   return _gnode;
 }
 

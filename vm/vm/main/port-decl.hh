@@ -47,10 +47,67 @@ public:
   Port(VM vm, UnstableNode& stream);
 
   inline
-  Port(VM vm, GlobalNode* gnode, UnstableNode& stream);
+  Port(VM vm, RichNode stream);
 
   inline
   Port(VM vm, GR gr, Port& from);
+
+public:
+  // PortLike interface
+
+  bool isPort(VM vm) {
+    return true;
+  }
+
+  inline
+  void send(VM vm, RichNode value);
+
+  inline
+  UnstableNode sendReceive(VM vm, RichNode value);
+
+public:
+  inline
+  void zombify(RichNode self, VM vm, RichNode proxyPort, UnstableNode& directPort);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+    out << "<Port>";
+  }
+
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
+
+
+private:
+  GlobalNode* _gnode;
+  UnstableNode _stream;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Port-implem-decl-after.hh"
+#endif
+
+/////////////////////
+// DistributedPort //
+/////////////////////
+
+#ifndef MOZART_GENERATOR
+#include "DistributedPort-implem-decl.hh"
+#endif
+
+class DistributedPort: public DataType<DistributedPort> {
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom("port");
+  }
+
+  inline
+  DistributedPort(VM vm, GlobalNode* gnode, RichNode proxyPort);
+
+  inline
+  DistributedPort(VM vm, GR gr, DistributedPort& from);
 
 public:
   // PortLike interface
@@ -78,11 +135,12 @@ public:
 
 private:
   GlobalNode* _gnode;
-  UnstableNode _stream;
+  StableNode _proxyPort;
+  UnstableNode _sync;
 };
 
 #ifndef MOZART_GENERATOR
-#include "Port-implem-decl-after.hh"
+#include "DistributedPort-implem-decl-after.hh"
 #endif
 
 ////////////

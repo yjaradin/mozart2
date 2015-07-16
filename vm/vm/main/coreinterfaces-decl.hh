@@ -496,7 +496,7 @@ struct Interface<RecordLike>:
 
 class PortLike;
 template<>
-struct Interface<PortLike>: ImplementedBy<Port, VMPort> {
+struct Interface<PortLike>: ImplementedBy<Port, DistributedPort, VMPort> {
   bool isPort(RichNode self, VM vm) {
     return false;
   }
