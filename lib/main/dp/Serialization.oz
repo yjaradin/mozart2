@@ -1,6 +1,7 @@
 functor
 import
    BSerializer at 'x-oz://boot/Serializer'
+   System
 export
    BaseSerializer
    BaseDeserializer
@@ -9,10 +10,22 @@ export
 define
    local
       Fin={Dictionary.new}
-      WD={WeakDictionary.new thread for K#_ in $ do P=Fin.K in {Dictionary.remove Fin K} {P} end end}
+      WD={WeakDictionary.new
+	  thread
+	     for K#_ in $ do
+		try
+		   P=Fin.K in
+		   {Dictionary.remove Fin K}
+		   {P}
+		catch E then
+		   {System.show 'Serialization.oz error'#E} %shouldn't happen
+		end
+	     end
+	  end}
+      C={NewCell 0}
    in
-      proc {Cleanup V P}
-	 K={NewName} in
+      proc {Cleanup V P} %TODO: have (de)serializer deal with their own GCing
+	 K=(O N in O=C:=N N=O+1 O) in %{NewName} in
 	 Fin.K:=P
 	 {WeakDictionary.put WD K V}
       end
