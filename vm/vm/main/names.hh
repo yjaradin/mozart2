@@ -184,7 +184,7 @@ UnstableNode UniqueName::serialize(VM vm, SE se) {
 }
 
 bool UniqueName::serialize(VM vm, SerializerCallback* cb, pb::Value* val) {
-  val->mutable_atom()->set_value(value().contents(), value().length());
+  val->mutable_uniquename()->set_name(value().contents(), value().length());
   return true;
 }
 
