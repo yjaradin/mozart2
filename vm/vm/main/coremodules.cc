@@ -31,6 +31,10 @@ namespace builtins {
 
 #include "mozartbuiltins.cc"
 
+constexpr char ModVirtualByteString::encoder[65];
+int* ModVirtualByteString::decoder;
+int ModVirtualByteString::decoderInternal[256];
+
 } // namespace builtins
 
 void registerCoreModules(VM vm) {

@@ -33,4 +33,7 @@ VirtualByteString = virtualByteString(
    toListWithTail: Boot_VirtualByteString.toByteList
    length: Boot_VirtualByteString.length
    get: Boot_VirtualByteString.getByteAt
+   toBase64: Boot_VirtualByteString.toBase64
+   fromBase64: Boot_VirtualByteString.fromBase64
+   newUUID: Boot_VirtualByteString.newUUID
 )

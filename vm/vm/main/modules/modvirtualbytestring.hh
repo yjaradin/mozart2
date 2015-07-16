@@ -29,6 +29,7 @@
 
 #include <sstream>
 #include <cstdlib>
+#include <boost/concept_check.hpp>
 
 #ifndef MOZART_GENERATOR
 
@@ -114,6 +115,118 @@ public:
     static void call(VM vm, In value, In at, Out result) {
       size_t pos = getArgument<size_t>(vm, at);
       result = build(vm, ozVBSGetAt(vm, value, pos));
+    }
+  };
+
+  static constexpr char encoder[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789"
+    "+/";
+  static int decoderInternal[256];
+  static int *decoder;
+  static void initDecoder(){
+    for (int i=0;i<256;i++) decoderInternal[i] = -1;
+    for (int i=0;i<64;i++) decoderInternal[(unsigned char) encoder[i]] = i;
+    decoderInternal[(unsigned char) '='] = -2;
+    decoder = decoderInternal;
+  }
+  class FromBase64: public Builtin<FromBase64> {
+  public:
+    FromBase64() : Builtin("fromBase64") {}
+
+    static void call(VM vm, In value, Out result) {
+      if(!decoder) initDecoder();
+      size_t bufSize = ozVSLengthForBuffer(vm, value);
+      std::vector<char> buffer;
+      ozVSGet(vm, value, bufSize, buffer);
+
+      OzListBuilder builder(vm);
+
+      unsigned int tmp = 0;
+      unsigned int count = 0;
+      for (auto iter = buffer.begin(); iter != buffer.end(); ++iter) {
+        int v = decoder[(unsigned char)*iter];
+        if (v == -1) continue;
+        if (v == -2) break;
+        tmp <<= 6;
+        tmp |= v;
+        switch (count % 4) {
+          case 0: break;
+          case 1:
+            builder.push_back(vm, (nativeint) tmp>>4);
+            tmp &= 0xF;
+            break;
+          case 2:
+            builder.push_back(vm, (nativeint) tmp>>2);
+            tmp &= 0x3;
+            break;
+          case 3:
+            builder.push_back(vm, (nativeint) tmp);
+            tmp = 0;
+            break;
+        }
+        count++;
+      }
+      result = builder.get(vm, vm->coreatoms.nil);
+    }
+  };
+
+  class ToBase64: public Builtin<ToBase64> {
+  public:
+    ToBase64() : Builtin("toBase64") {}
+
+    static void call(VM vm, In value, Out result) {
+      size_t bufSize = ozVBSLengthForBuffer(vm, value);
+      std::vector<unsigned char> buffer;
+      ozVBSGet(vm, value, bufSize, buffer);
+      OzListBuilder builder(vm);
+      unsigned int tmp = 0;
+      unsigned int count = 0;
+      for (auto iter = buffer.begin(); iter != buffer.end(); ++iter) {
+        tmp <<= 8;
+        tmp |= *iter;
+        switch (count % 3) {
+          case 0:
+            builder.push_back(vm, (nativeint) encoder[tmp>>2]);
+            tmp &= 0x3;
+            break;
+          case 1:
+            builder.push_back(vm, (nativeint) encoder[tmp>>4]);
+            tmp &= 0xF;
+            break;
+          case 2:
+            builder.push_back(vm, (nativeint) encoder[tmp>>6]);
+            tmp &= 0x3F;
+            builder.push_back(vm, (nativeint) encoder[tmp]);
+            tmp = 0;
+            break;
+        }
+        count++;
+      }
+      switch (count % 3) {
+        case 2:
+          builder.push_back(vm, (nativeint) encoder[tmp<<2]);
+          builder.push_back(vm, (nativeint) '=');
+          break;
+        case 1:
+          builder.push_back(vm, (nativeint) encoder[tmp<<4]);
+          builder.push_back(vm, (nativeint) '=');
+          builder.push_back(vm, (nativeint) '=');
+          break;
+        case 0:
+          break;
+      }
+      result = builder.get(vm, vm->coreatoms.nil);
+    }
+  };
+  
+  class NewUUID: public Builtin<NewUUID> {
+  public:
+    NewUUID(): Builtin("newUUID") {}
+
+    static void call(VM vm, Out result) {
+      result = build(vm, vm->genUUID());
     }
   };
 };
