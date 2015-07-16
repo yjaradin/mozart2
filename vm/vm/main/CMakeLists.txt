@@ -14,7 +14,7 @@ configure_file(
 
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
-PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS serialization.proto)
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS serialization.proto distribution.proto)
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen

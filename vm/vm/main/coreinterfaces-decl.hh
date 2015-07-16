@@ -418,7 +418,7 @@ class BaseDottable;
 template<>
 struct Interface<BaseDottable>:
   ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array, Dictionary,
-    Atom, OptName, GlobalName, Boolean, Unit> {
+    Atom, OptName, GlobalName, Boolean, Unit, PBufMessage> {
 
   bool lookupFeature(RichNode self, VM vm, RichNode feature,
                      nullable<UnstableNode&> value) {
@@ -434,7 +434,7 @@ struct Interface<BaseDottable>:
 class DotAssignable;
 template<>
 struct Interface<DotAssignable>:
-  ImplementedBy<Array, Dictionary> {
+  ImplementedBy<Array, Dictionary, PBufMessage> {
 
   void dotAssign(RichNode self, VM vm, RichNode feature, RichNode newValue) {
     raiseTypeError(vm, "Array or Dictionary", self);

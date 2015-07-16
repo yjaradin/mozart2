@@ -16,21 +16,22 @@ message SitePayload {
 }
 
 message SiteMessage {
-  repeated SitePayload payloads = 1;
+  repeated SitePayload payloads = 1; //ordered ascending
   repeated uint64 missing = 2; //ordered ascending
-  optional uint64 lastSeen = 3;
-  optional EStatus senderStatus = 4;
-  optional EStatus receiverStatus = 5;
-  optional uint64 senderMonotonic = 6;
-  optional uint64 receiverMonotonic = 7;
+  optional uint64 senderNext = 3;
+  optional uint64 receiverNext = 4;
+  
+  optional EStatus senderStatus = 5;
+  optional EStatus receiverStatus = 6;
+  optional uint64 senderMonotonic = 7;
+  optional uint64 receiverMonotonic = 8;
+
+  optional fixed64 senderTime = 9;
+  optional fixed64 receiverTime = 10;
 }
 
 message ChannelMessage {
-  optional SiteMessage messages = 1;
-
-  optional fixed64 senderTime = 20;
-  optional fixed64 receiverTime = 21;
-  optional float detectionFactor = 22;
+  optional SiteMessage siteMessage = 1;
 
   optional bytes senderSiteId = 30;
 }

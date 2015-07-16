@@ -61,6 +61,46 @@ public:
     }
   };
 
+  class NewMessage: public Builtin<NewMessage> {
+  public:
+    NewMessage(): Builtin("newMessage") {}
+    static void call(VM vm, In pool, In type, Out result) {
+      result = safeGet<PBufPool>(vm, pool, "pool").newMessage(vm, type);
+    }
+  };
+
+  class AddMessage: public Builtin<AddMessage> {
+  public:
+    AddMessage(): Builtin("addMessage") {}
+    static void call(VM vm, In msg, In feature, Out result) {
+    result = safeGet<PBufMessage>(vm, msg, "message").addMessage(vm, feature);
+    }
+  };
+
+  class AddValue: public Builtin<AddValue> {
+  public:
+    AddValue(): Builtin("addValue") {}
+    static void call(VM vm, In msg, In feature, In value) {
+    safeGet<PBufMessage>(vm, msg, "message").addValue(vm, feature, value);
+    }
+  };
+
+  class Serialize: public Builtin<Serialize> {
+  public:
+    Serialize(): Builtin("serialize") {}
+    static void call(VM vm, In msg, Out result) {
+    result = safeGet<PBufMessage>(vm, msg, "message").serializeToVBS(vm);
+    }
+  };
+
+  class Parse: public Builtin<Parse> {
+  public:
+    Parse(): Builtin("parse") {}
+    static void call(VM vm, In msg, In bytes) {
+    safeGet<PBufMessage>(vm, msg, "message").parseFromVBS(vm, bytes);
+    }
+  };
+
 };
 
 }
@@ -70,3 +110,5 @@ public:
 #endif // MOZART_GENERATOR
 
 #endif // MOZART_MODPROTOBUF_H
+
+class stat;
