@@ -29,6 +29,7 @@
 
 #include <type_traits>
 #include <cstdio>
+#include <boost/concept_check.hpp>
 
 #ifndef MOZART_GENERATOR
 
