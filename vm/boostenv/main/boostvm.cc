@@ -234,11 +234,18 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
   // If the target VM has closed its port or terminated,
   // we do not need to pickle value
   bool portClosed = true;
-  env.findVM(to, [&portClosed] (BoostVM& targetVM) {
+  VMIdentifier remoteId = -1;
+  env.findVM(to, [&portClosed, &remoteId] (BoostVM& targetVM) {
     portClosed = targetVM.portClosed;
+    remoteId = targetVM.identifier;
   });
   if (portClosed)
     return;
+
+  if(remoteId == identifier) {
+    receiveOnVMStream(value);
+    return;
+  }
 
   std::ostringstream out;
   pickle(vm, value, out);
