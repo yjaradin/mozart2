@@ -70,6 +70,16 @@ public:
     }
   };
 
+  class UniqueToAtom: public Builtin<UniqueToAtom> {
+  public:
+    UniqueToAtom(): Builtin("uniqueToAtom") {}
+
+    static void call(VM vm, In uname, Out result) {
+      auto nameValue = getArgument<unique_name_t>(vm, uname, "Unique name");
+      result = build(vm, atom_t(nameValue));
+    }
+  };
+
   class NewNamed: public Builtin<NewNamed> {
   public:
     NewNamed(): Builtin("newNamed") {}
