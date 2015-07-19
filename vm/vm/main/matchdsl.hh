@@ -310,7 +310,7 @@ struct OzValueToPrimitiveValue<mozart::internal::uint64IfDifferentFromSizeT> {
   static bool call(VM vm, RichNode value, std::uint64_t& primitive) {
     if (value.is<SmallInt>()) {
       nativeint intValue = value.as<SmallInt>().value();
-      if (intValue > 0) {
+      if (intValue >= 0) {
         primitive = (int64_t) intValue;
         return true;
       } else {

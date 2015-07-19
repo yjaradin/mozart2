@@ -41,7 +41,7 @@ define
    SiteMarker = {NewName}
    class Site
       feat
-	 SiteMarker: unit
+	 !SiteMarker: unit
       attr
 	 shortId
 	 reachability

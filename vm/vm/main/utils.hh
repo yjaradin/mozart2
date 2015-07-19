@@ -51,6 +51,14 @@ atom_t PrimitiveTypeToExpectedAtom<internal::intIfDifferentFromNativeInt>::resul
   return vm->getAtom("integer");
 }
 
+atom_t PrimitiveTypeToExpectedAtom<internal::int64IfDifferentFromNativeInt>::result(VM vm) {
+  return vm->getAtom("integer");
+}
+
+atom_t PrimitiveTypeToExpectedAtom<internal::uint64IfDifferentFromSizeT>::result(VM vm) {
+  return vm->getAtom("integer");
+}
+
 atom_t PrimitiveTypeToExpectedAtom<size_t>::result(VM vm) {
   return vm->getAtom("positive integer");
 }

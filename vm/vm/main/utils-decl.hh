@@ -46,6 +46,18 @@ struct PrimitiveTypeToExpectedAtom<internal::intIfDifferentFromNativeInt> {
 };
 
 template <>
+struct PrimitiveTypeToExpectedAtom<internal::int64IfDifferentFromNativeInt> {
+  inline
+  static atom_t result(VM vm);
+};
+
+template <>
+struct PrimitiveTypeToExpectedAtom<internal::uint64IfDifferentFromSizeT> {
+  inline
+  static atom_t result(VM vm);
+};
+
+template <>
 struct PrimitiveTypeToExpectedAtom<size_t> {
   inline
   static atom_t result(VM vm);
