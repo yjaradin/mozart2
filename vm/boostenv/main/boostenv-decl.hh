@@ -32,9 +32,15 @@
 #include <cerrno>
 #include <forward_list>
 
-#include <boost/thread.hpp>
-
 #include <boost/asio.hpp>
+
+#if defined(MOZART_GENERATOR)||defined(MOZART_BUILTIN_GENERATOR)
+#include "boostthread_mockup.hh"
+#else
+#include <boost/thread.hpp>
+#endif
+
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "boostvm-decl.hh"

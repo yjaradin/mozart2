@@ -29,7 +29,11 @@
 
 #include <atomic>
 
+#if defined(MOZART_GENERATOR)||defined(MOZART_BUILTIN_GENERATOR)
+#include "boostthread_mockup.hh"
+#else
 #include <boost/thread.hpp>
+#endif
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>

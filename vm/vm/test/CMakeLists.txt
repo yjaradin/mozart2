@@ -31,6 +31,6 @@ add_executable(vmtest testutils.cc sanitytest.cc smallinttest.cc floattest.cc
   virtualstringtest.cc bytestringtest.cc)
 target_link_libraries(vmtest mozartvm "${GTEST_LIBRARY}" "${GTEST_MAIN_LIBRARY}")
 
-if(NOT MINGW)
+#if(NOT MINGW)
   target_link_libraries(vmtest pthread)
-endif()
+#endif()
