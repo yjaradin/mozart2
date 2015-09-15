@@ -45,6 +45,16 @@ void OptName::makeFeature(RichNode self, VM vm) {
   self.become(vm, GlobalName::build(vm));
 }
 
+bool OptName::serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val) {
+  self.become(vm, GlobalName::build(vm));
+  return self.as<GlobalName>().serialize(vm, cb, val);
+}
+
+bool OptName::serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data) {
+  self.become(vm, GlobalName::build(vm));
+  return self.as<GlobalName>().serializeImmediate(vm, cb, data);
+}
+
 GlobalNode* OptName::globalize(RichNode self, VM vm) {
   self.become(vm, GlobalName::build(vm));
   return self.as<GlobalName>().globalize(vm);

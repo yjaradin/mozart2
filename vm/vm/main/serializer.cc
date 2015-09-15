@@ -154,6 +154,7 @@ UnstableNode Serializer::add(VM vm, RichNode listAdd, RichNode listImm) {
       rv->set_ref(nextRef);
       if (r) r->set_id(nextRef);
       if (!n.type()->serialize(vm, &cb, n, rv->mutable_value())) {
+        n.update();
 	GlobalNode* gn = n.type()->globalize(vm, n);
 	n.update();
 	UnstableNode t = buildTuple(vm, n.type()->getTypeAtom(vm), nextRef, gn->reified);

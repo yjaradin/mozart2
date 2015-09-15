@@ -72,6 +72,12 @@ public:
   // Miscellaneous
 
   inline
+  bool serialize(RichNode self, VM vm, SerializerCallback* cb, pb::Value* val);
+
+  inline
+  bool serializeImmediate(RichNode self, VM vm, SerializerCallback* cb, pb::ImmediateData* data);
+
+  inline
   GlobalNode* globalize(RichNode self, VM vm);
 
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
