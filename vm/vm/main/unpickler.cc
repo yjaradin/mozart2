@@ -32,6 +32,9 @@ namespace {
 // Unpickler //
 ///////////////
 
+unsigned char magic[] = {0xF7, 0x4D, 0x32, 0xF9, 0xAB, 0x30, 0x31, 0xBB,
+  0x9D, 0x67, 0x46, 0x3A, 0x9A, 0xB8, 0xF6, 0x9E};
+
 class Unpickler {
 public:
   Unpickler(VM vm, std::istream& input): vm(vm), input(input) {
@@ -39,6 +42,17 @@ public:
 
   /** Top-level unpickle function */
   UnstableNode unpickle() {
+    int magic_index = 0;
+    while(magic_index != 16) {
+      unsigned char b = readByte();
+      if(magic[magic_index] == b){
+        magic_index++;
+      } else if (magic[0] == b){
+        magic_index = 1;
+      } else {
+        magic_index = 0;
+      }
+    }
     size_t count = readSize();
     size_t resultIndex = readSize();
 

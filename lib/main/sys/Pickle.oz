@@ -55,19 +55,16 @@ define
    %% Save and its variants
    %%
 
-   fun {Save URL}
-      {BootPickle.save URL nil}
+   proc {Save Value FileName}
+      {SaveWithHeader Value FileName nil 0}
    end
 
    proc {SaveCompressed Value FileName Level}
-      {Save Value FileName}
+      {SaveWithHeader Value FileName nil Level}
    end
 
    proc {SaveWithHeader Value FileName Header Level}
-      % TODO Actually write the header
-      %{Sink write(Header)}
-      %{Sink write(HeaderMagic)}
-      {Save Value FileName}
+      {BootPickle.save Value {Coders.encode Header nil} nil FileName}
    end
 
    proc {SaveWithCells Value FileName Header Level}
@@ -97,7 +94,7 @@ define
    %%% Serialize an object into a ByteString. May throw an exception if the
    %%% object contains non-serializable components (e.g. cells, unbound variables)
    fun {Pack Value}
-      {BootPickle.pack Value nil}
+      {BootPickle.pack Value nil nil}
    end
 
    %%% {PackWithReplacements Object [From1#To1 From2#To2 ...]} = BS
@@ -107,7 +104,9 @@ define
    %%% by ToN before the serialization starts. Deserializing the byte string
    %%% will only give back ToN, not FromN. The Object itself will stay the same
    %%% after calling PackWithReplacements.
-   PackWithReplacements = BootPickle.pack
+   fun {PackWithReplacements Value Replacements}
+      {BootPickle.pack Value nil Replacements}
+   end
 
    fun {PackWithCells Value}
       {Pack Value}

@@ -174,6 +174,12 @@ void Pickler::pickle(RichNode value, RichNode temporaryReplacement) {
   }
 
   // header
+  //start-of-magic
+  writeSize(0xF74D32F9);
+  writeSize(0xAB3031BB);
+  writeSize(0x9D67463A);
+  writeSize(0x9AB8F69E);
+  //end-of-magic
   writeSize(count);
   writeSize(topLevelIndex);
 

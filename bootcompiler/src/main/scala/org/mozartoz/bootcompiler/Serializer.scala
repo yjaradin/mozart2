@@ -9,6 +9,8 @@ import symtab._
 class Serializer(program: Program, output: BufferedOutputStream) {
   val nodeToIndex = new scala.collection.mutable.HashMap[OzValue, Int]
   val indexCounter = new util.Counter(1)
+  val magic = Array(0xF7, 0x4D, 0x32, 0xF9, 0xAB, 0x30, 0x31, 0xBB,
+    0x9D, 0x67, 0x46, 0x3A, 0x9A, 0xB8, 0xF6, 0x9E)
 
   // Top-level
 
@@ -16,6 +18,8 @@ class Serializer(program: Program, output: BufferedOutputStream) {
     val topLevelCodeArea = OzCodeArea(program.topLevelAbstraction.codeArea)
     val topLevelValue = OzAbstraction(topLevelCodeArea, Nil)
     giveIndex(topLevelValue)
+
+    magic foreach writeByte
 
     writeSize(nodeToIndex.size)
     writeSize(nodeToIndex(topLevelValue))

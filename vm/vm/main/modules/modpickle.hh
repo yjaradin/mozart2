@@ -47,8 +47,13 @@ public:
   public:
     Pack(): Builtin("pack") {}
 
-    static void call(VM vm, In value, In temporaryReplacement, Out result) {
+    static void call(VM vm, In value, In headerVBS, In temporaryReplacement, Out result) {
       std::ostringstream buf;
+      size_t headerSize = ozVBSLengthForBuffer(vm, headerVBS);
+      std::vector<unsigned char> header;
+      ozVBSGet(vm, headerVBS, headerSize, header);
+      std::string headerS(header.begin(), header.end());
+      buf << headerS;
       pickle(vm, value, temporaryReplacement, buf);
       std::string str = buf.str();
       auto bytes = newLString(vm,
@@ -78,12 +83,19 @@ public:
   public:
     Save(): Builtin("save") {}
 
-    static void call(VM vm, In value, In temporaryReplacement, In fileNameVS) {
+    static void call(VM vm, In value, In headerVBS, In temporaryReplacement, In fileNameVS) {
       size_t fileNameSize = ozVSLengthForBuffer(vm, fileNameVS);
       std::string fileName;
       ozVSGet(vm, fileNameVS, fileNameSize, fileName);
 
+      size_t headerSize = ozVBSLengthForBuffer(vm, headerVBS);
+      std::vector<unsigned char> header;
+      ozVBSGet(vm, headerVBS, headerSize, header);
+      std::string headerS(header.begin(), header.end());
+
       std::ofstream file(fileName, std::ios_base::binary);
+
+      file << headerS;
       pickle(vm, value, temporaryReplacement, file);
     }
   };
