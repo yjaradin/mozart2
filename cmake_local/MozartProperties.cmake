@@ -39,7 +39,7 @@ unset(git_describe_output)
 # oz.date
 
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} log "--format=%aD" -1
+  COMMAND ${GIT_EXECUTABLE} log "--format=%cD" -1
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
   OUTPUT_VARIABLE git_date_output
   ERROR_QUIET
