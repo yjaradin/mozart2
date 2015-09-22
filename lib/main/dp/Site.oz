@@ -647,7 +647,7 @@ define
 	       if @dropChannelsCountdown>0 then
 		  dropChannelsCountdown := @dropChannelsCountdown - 1
 	       else
-		  if {@channel closed($)} andthen @failureStatus \= ok then
+		  if (@channel == unit orelse {@channel closed($)}) andthen @failureStatus \= ok then
 		     periodicThreadControl := _
 		  end
 	       end
