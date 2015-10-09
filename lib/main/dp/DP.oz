@@ -6,6 +6,7 @@ export
    Break
    Kill
    GetFaultStream
+   GetProxy
 define
    fun{GetDistrObject X}
       if {Value.type X} == object andthen {Site.is X} then
@@ -24,5 +25,8 @@ define
    end
    fun{GetFaultStream X}
       {{GetDistrObject X} getFaultStream($)}
+   end
+   fun{GetProxy X}
+      {GetDistrObject X}
    end
 end

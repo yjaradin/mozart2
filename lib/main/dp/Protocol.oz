@@ -166,6 +166,9 @@ define
 	    end
 	 end
 
+	 meth getCoordinatorId($)
+	    @coordinatorSiteId
+	 end
 	 meth WatchCoordinator()
 	    thread if {Record.waitOr @coordinatorControl#{@coordinatorSite getBrokenAlarm($)}}==2 then {@selfPO Break(true)} end end
 	    thread
