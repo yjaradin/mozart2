@@ -28,6 +28,7 @@ message SiteMessage {
 
   optional fixed64 senderTime = 9;
   optional fixed64 receiverTime = 10;
+  optional fixed64 senderDelay = 11;
 }
 
 message ChannelMessage {

@@ -194,6 +194,11 @@ define
 	    @messenger = {GetMessenger ShortId self}
 	 end
 
+	 meth setReachability(R)
+	    Site,setReachability(R)
+	    {@messenger setAddresses(R.addresses)}
+	 end
+
 	 meth getMessenger($)
 	    @messenger
 	 end
@@ -201,20 +206,6 @@ define
 	 meth receive(VBS)
 	    thread
 	       {@localSite dispatchMessage(self {{New Deserializer init(@localSite self VBS)} close($)})}
-	    end
-	 end
-
-	 meth requestChannel()
-	    for A in {Map{Sort {self getReachability($)}.addresses fun{$ A1 A2} A1.quality>A2.quality end}fun{$ A}A.url end}
-	       break:B do
-	       case {@localSite getRemoteByUrl(A $)}
-	       of unit then
-		  skip
-	       [] R andthen R==self then
-		  {B}
-	       else
-		  skip
-	       end
 	    end
 	 end
 
@@ -390,7 +381,9 @@ define
 	    selfPort
 	    upper
 	    upperIsGCed
-	    channel:unit
+	    channel: unit
+	    addresses: nil
+	    channelRequest: false
 	    
 	    localStatus: 'StatusClean'
 	    remoteStatus: 'StatusClean'
@@ -437,12 +430,21 @@ define
 	       {Loop}
 	    end
 	 end
+	 meth setAddresses(As)
+	    addresses := As
+	 end
 	 meth offerChannel(Chan)
 	    if {Not {Chan closed($)}} then
-	       channel := Chan
+	       OldChan = channel := Chan in
+	       if OldChan \= Chan andthen OldChan \= unit then
+		  {OldChan close()}
+	       end
 	       @periodicThreadControl=unit
 	       {self SendIfNeeded()}
 	    end
+	 end
+	 meth getChannel($)
+	    @channel
 	 end
 	 meth setUpper(Upper)
 	    local WR={BWeakRef.new Upper} in
@@ -469,13 +471,9 @@ define
 	       {self FailStatus(ok)}
 	       remoteMonotonic := Message.senderMonotonic
 	       lastReceivedTime := {@rttPredictor currentTime($)}
-	       local Prev=remoteTime := Message.senderTime in
-		  if Prev\=0 then
-		     {@rttPredictor ping2(Prev Message.senderTime)}
-		  end
-	       end
+	       remoteTime := Message.senderTime
 	       if Message.receiverTime\=0 then
-		  {@rttPredictor ping2(Message.receiverTime {@rttPredictor currentTime($)})}
+		  {@rttPredictor ping2(Message.receiverTime+Message.senderDelay @lastReceivedTime)}
 	       end
 	       knownLocalStatus := Message.receiverStatus
 	       remoteStatus := Message.senderStatus
@@ -613,16 +611,31 @@ define
 					       senderNext:@localNext
 					       receiverNext:@remoteNext
 					       senderTime:@lastSentTime
-					       receiverTime:@remoteTime))}
+					       receiverTime:@remoteTime
+					       senderDelay:@lastSentTime-@lastReceivedTime))}
 		  forceMessage := false
 		  if @toRetransmit \= nil then
 		     toRetransmit := nil
-		     lastRetransmit = ThisMonotonic
+		     lastRetransmit := ThisMonotonic
 		  end
 	       end
-	    elseif @forceMessage orelse {@payloadToSend isNonEmpty($)} then
-	       {@upper requestChannel()}
+	    elseif {Not @channelRequest} andthen @localStatus \= 'StatusBroken' andthen (@forceMessage orelse {@payloadToSend isNonEmpty($)}) then
+	       Addresses = @addresses in
+	       channelRequest := true
+	       thread
+		  for A in {Sort Addresses fun{$ A1 A2} A1.quality>A2.quality end}
+		     break:B do
+		     C = {New HighLevelChannel init(url:A.url)} in
+		     if {Not {C closed($)}} then
+			{B}
+		     end
+		  end
+		  {Send @selfPort ResetChannelRequest()}
+	       end
 	    end
+	 end
+	 meth ResetChannelRequest()
+	    channelRequest := false
 	 end
 	 meth PeriodicCheck(?DelayBeforeNextCall)
 	    C = {@rttPredictor currentTime($)}
@@ -733,7 +746,7 @@ define
 	 @max=10 %10ms
       end
       meth ping2(T1 T2)
-	 D = {Clamp T2-T1 10 50000}
+	 D = {Clamp {Clamp T2-T1 @min div 2 @max * 2} 10 50000}
 	 Delta = (@max-@min) div 10 in
 	 min:={Min D @min+Delta}
 	 max:={Max D @max-Delta}
