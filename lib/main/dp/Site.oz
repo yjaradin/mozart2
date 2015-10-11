@@ -99,6 +99,9 @@ define
 	 {self registerDispatchingTarget(site proc{$ From Msg}
 						 case Msg
 						 of siteEnquire(to:_ ask:ShortId) then
+						    if {{self getSite(ShortId unit $)} getReachability($)}.version == 0 then
+						       {Delay 3000}
+						    end
 						    {From sendMessage(siteAnswer(to:site
 										 id:ShortId
 										 descr:{{self getSite(ShortId unit $)} getReachability($)}))}
@@ -127,9 +130,15 @@ define
       meth getRemote(ShortId KnowingSite $)
 	 true = ShortId\=@shortId
 	 Remote = {GetRemoteSite ShortId} in
-	 if {Remote getReachability($)}.version == 0
-	    andthen KnowingSite\=unit then
-	    {KnowingSite sendMessage(siteEnquire(to:site ask:ShortId))}
+	 if {Remote getReachability($)}.version == 0 then
+	    RemChan = {{Remote getMessenger($)} getChannel($)}
+	 in
+	    if RemChan\= unit andthen {Not {RemChan closed($)}} then
+	       {Remote sendMessage(siteEnquire(to:site ask:ShortId))}
+	    end
+	    if KnowingSite\=unit then
+	       {KnowingSite sendMessage(siteEnquire(to:site ask:ShortId))}
+	    end
 	 end
 	 Remote
       end
@@ -432,6 +441,7 @@ define
 	 end
 	 meth setAddresses(As)
 	    addresses := As
+	    {self SendIfNeeded()}
 	 end
 	 meth offerChannel(Chan)
 	    if {Not {Chan closed($)}} then
