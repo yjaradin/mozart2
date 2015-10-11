@@ -229,35 +229,35 @@ nativeint PatMatUtils::maxX(VM vm, RichNode pattern) {
   while (!todo.empty()) {
     RichNode current = todo.pop_front(vm);
     bool recur = false;
-    if (pattern.is<PatMatCapture>()) {
-      nativeint cand = pattern.as<PatMatCapture>().index();
+    if (current.is<PatMatCapture>()) {
+      nativeint cand = current.as<PatMatCapture>().index();
       if (cand > max) max = cand;
-    } else if (pattern.is<PatMatOpenRecord>()) {
-      auto openrec = pattern.as<PatMatOpenRecord>();
+    } else if (current.is<PatMatOpenRecord>()) {
+      auto openrec = current.as<PatMatOpenRecord>();
       for (size_t i = 0; i < openrec.getCount(); ++i) {
 	todo.push_back(vm, *openrec.getElement(i));
 	recur = true;
       }
-    } else if (pattern.is<PatMatConjunction>()) {
-      auto conj = pattern.as<PatMatConjunction>();
+    } else if (current.is<PatMatConjunction>()) {
+      auto conj = current.as<PatMatConjunction>();
       for (size_t i = 0; i < conj.getCount(); ++i) {
 	todo.push_back(vm, *conj.getElement(i));
 	recur = true;
       }	  
-    } else if (pattern.is<Record>()) {
-      auto rec = pattern.as<Record>();
+    } else if (current.is<Record>()) {
+      auto rec = current.as<Record>();
       for (size_t i = 0; i < rec.getWidth(); ++i) {
 	todo.push_back(vm, *rec.getElement(i));
 	recur = true;
       }	  
-    } else if (pattern.is<Tuple>()) {
-      auto tup = pattern.as<Tuple>();
+    } else if (current.is<Tuple>()) {
+      auto tup = current.as<Tuple>();
       for (size_t i = 0; i < tup.getWidth(); ++i) {
 	todo.push_back(vm, *tup.getElement(i));
 	recur = true;
       }	  
-    } else if (pattern.is<Cons>()) {
-      auto cons = pattern.as<Cons>();
+    } else if (current.is<Cons>()) {
+      auto cons = current.as<Cons>();
       todo.push_back(vm, *cons.getHead());
       todo.push_back(vm, *cons.getTail());
       recur = true;
