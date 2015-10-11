@@ -101,7 +101,7 @@ public:
     Rand(): Builtin("rand") {}
 
     static void call(VM vm, Out result) {
-      result = build(vm, (nativeint) BoostVM::forVM(vm).random_generator());
+      result = build(vm, (std::uint64_t) BoostVM::forVM(vm).random_generator());
     }
   };
 
@@ -122,8 +122,8 @@ public:
     RandLimits(): Builtin("randLimits") {}
 
     static void call(VM vm, Out min, Out max) {
-      min = build(vm, (nativeint) BoostVM::random_generator_t::min());
-      max = build(vm, (nativeint) BoostVM::random_generator_t::max());
+      min = build(vm, (std::uint64_t) BoostVM::random_generator_t::min());
+      max = build(vm, (std::uint64_t) BoostVM::random_generator_t::max());
     }
   };
 
