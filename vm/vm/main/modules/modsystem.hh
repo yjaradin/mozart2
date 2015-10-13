@@ -28,6 +28,7 @@
 #include "../mozartcore.hh"
 
 #include <iostream>
+#include <cstdlib>
 
 #ifndef MOZART_GENERATOR
 
@@ -168,6 +169,25 @@ public:
       auto intExitCode = getArgument<nativeint>(vm, exitCode, "Integer");
       auto atomReason = getArgument<atom_t>(vm, reason);
       vm->getEnvironment().killVM(vm, intExitCode, atomReason.contents());
+    }
+  };
+
+  class HardExit: public Builtin<HardExit> {
+  public:
+    HardExit(): Builtin("hardExit") {}
+
+    static void call(VM vm, In exitCode) {
+      auto intExitCode = getArgument<nativeint>(vm, exitCode, "Integer");
+      std::exit(intExitCode);
+    }
+  };
+
+  class Crash: public Builtin<Crash> {
+  public:
+    Crash(): Builtin("crash") {}
+
+    static void call(VM vm) {
+      std::abort();
     }
   };
 };

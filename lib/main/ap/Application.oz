@@ -89,12 +89,14 @@
 
 functor
 import
-   BootSystem(exit) at 'x-oz://boot/System'
+   BootSystem(exit crash hardExit) at 'x-oz://boot/System'
    OS(getEnv)
    Open(file)
    Property(get condGet)
    Gui(getGuiCmdArgs:GetGuiArgs) at 'x-oz://contrib/ap/OptionSheet.ozf'
 export
+   Crash
+   HardExit
    Exit
    GetCgiArgs
    GetCmdArgs
@@ -680,6 +682,14 @@ define
 
    proc {Exit ExitCode}
       {BootSystem.exit ExitCode 'kill'}
+   end
+
+   proc {HardExit ExitCode}
+      {BootSystem.hardExit ExitCode}
+   end
+
+   proc {Crash}
+      {BootSystem.crash}
    end
 
    %%
