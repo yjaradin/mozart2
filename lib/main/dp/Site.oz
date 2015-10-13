@@ -45,8 +45,9 @@ define
       attr
 	 shortId
 	 reachability
+	 reachabilitySync
       meth init()
-	 @reachability = r(version:0 addresses:nil)
+	 @reachability = r(version:~1 addresses:nil)
       end
       meth getId($)
 	 @shortId
@@ -63,10 +64,14 @@ define
 	    {UpdateUrls self
 	     {Sort {Map Old.addresses fun{$ A}A.url end} Value.'<'}
 	     {Sort {Map R.addresses   fun{$ A}A.url end} Value.'<'}}
+	    @reachabilitySync=unit
 	 end
       end
       meth getReachability($)
 	 @reachability
+      end
+      meth reachabilitySync($)
+	 @reachabilitySync
       end
       meth break()
 	 {self localFail(break)}
@@ -92,6 +97,7 @@ define
       from Site
       meth init()
 	 Site,init()
+	 {self setReachability(r(version:0 addresses:nil))}
 	 @shortId = {self idFromBytes({VirtualByteString.newUUID} $)}
 	 protocolManager := {New Protocol.manager init(self)}
 	 {Protocol.registerBaseProtocols @protocolManager}
@@ -99,12 +105,13 @@ define
 	 {self registerDispatchingTarget(site proc{$ From Msg}
 						 case Msg
 						 of siteEnquire(to:_ ask:ShortId) then
-						    if {{self getSite(ShortId unit $)} getReachability($)}.version == 0 then
-						       {Delay 3000}
-						    end
+						    S = {self getSite(ShortId unit $)} in
+						    {System.show enquire(ShortId)}
+						    {Wait {S reachabilitySync($)}}
+						    {System.show synced(ShortId)}
 						    {From sendMessage(siteAnswer(to:site
 										 id:ShortId
-										 descr:{{self getSite(ShortId unit $)} getReachability($)}))}
+										 descr:{S getReachability($)}))}
 						 [] siteAnswer(to:_ id:ShortId descr:Descr) then
 						    {{self getRemote(ShortId unit $)} setReachability(Descr)}
 						 [] siteKill(to:_) then
@@ -130,7 +137,7 @@ define
       meth getRemote(ShortId KnowingSite $)
 	 true = ShortId\=@shortId
 	 Remote = {GetRemoteSite ShortId} in
-	 if {Remote getReachability($)}.version == 0 then
+	 if {Remote getReachability($)}.version == ~1 then
 	    RemChan = {{Remote getMessenger($)} getChannel($)}
 	 in
 	    if RemChan\= unit andthen {Not {RemChan closed($)}} then
