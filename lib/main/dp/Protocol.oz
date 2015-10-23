@@ -378,7 +378,7 @@ define
    end
    
    CoordinatorKeepAlives = {Dictionary.new}
-   fun{NewSequencer}
+   fun{NewSequencer Obj Meth}
       O={New class
 		attr
 		   status:alive
@@ -388,29 +388,28 @@ define
 		   @seqs={Dictionary.new}
 		   @ooos={Dictionary.new}
 		end
-		meth register(R K $)
+		meth register(R K)
 		   if @status == alive then
 		      @seqs.K:=0
 		      @ooos.K:=nil
-		      [register(R K)]
+		      {Obj Meth([register(R K)])}
 		   else
-		      [kill(K)]
+		      {Obj Meth([kill(K)])}
 		   end
 		end
 		meth unregister(K)
 		   {Dictionary.remove @seqs K}
 		   {Dictionary.remove @ooos K}
 		end
-		meth kill(?Res)
+		meth kill()
 		   status:=dead
-		   Res = {Map {Dictionary.keys @seq}
-			  fun{$ K}
-			     kill(K)
-			  end}
+		   for X in {Dictionary.keys @seq} do
+		      {Obj Meth([kill(X)])}
+		   end
 		   {Dictionary.removeAll @seqs}
 		   {Dictionary.removeAll @ooos}
 		end
-		meth sequence(K S M $)
+		meth sequence(K S M)
 		   if {HasFeature @seqs K} then
 		      if @seqs.K == S then
 			 Good Bad in
@@ -424,13 +423,13 @@ define
 							end
 						     end Good Bad}
 			 @ooos.K := Bad
-			 M|{Map Good fun{$ P}P.2 end}
+			 %{System.show h(S M)|Good}
+			 {Obj Meth(M|{Map Good fun{$ P}P.2 end})}
 		      else
 			 @ooos.K := {List.merge @ooos.K [S#M] fun{$ P1 P2}P1.1<P2.1 end}
-			 nil
 		      end
 		   else
-		      nil
+		      skip
 		   end
 		end
 	     end init()}
@@ -452,7 +451,7 @@ define
       meth init(LocalSite LocalPort ?CoordinatorDest ?Cleanup)
 	 Dest = {NewName} in
 	 @localPort = LocalPort
-	 @sequencer = {NewSequencer}
+	 @sequencer = {NewSequencer self ProcessSeq}
 	 {LocalSite registerDispatchingTarget(Dest proc{$ RemoteSite Msg}
 						      {self {AdjoinAt Msg remoteSite RemoteSite}}
 						   end Cleanup)}
@@ -466,11 +465,11 @@ define
 	    {self InternalUnregister(ProxyKey Done)}
 	 end
 	 CoordinatorKeepAlives.ProxyKey:=Killer#Done#RemoteSite
-	 {self ProcessSeq({@sequencer register(RemoteSite ProxyKey $)})}
+	 {@sequencer register(RemoteSite ProxyKey)}
       end
 
       meth unregisterProxy(ProxyKey Seq remoteSite:RemoteSite ...)
-	 {self ProcessSeq({@sequencer sequence(ProxyKey Seq unregister(RemoteSite ProxyKey) $)})}
+	 {@sequencer sequence(ProxyKey Seq unregister(RemoteSite ProxyKey))}
       end
 
       meth InternalUnregister(ProxyKey ?Done)
@@ -480,7 +479,7 @@ define
       end
 
       meth send(ProxyKey Seq Msg remoteSite:RemoteSite ...)
-	 {self ProcessSeq({@sequencer sequence(ProxyKey Seq send(Msg) $)})}
+	 {@sequencer sequence(ProxyKey Seq send(Msg))}
       end
 
       meth ProcessSeq(L)
@@ -509,7 +508,7 @@ define
       meth kill(remoteSite:RemoteSite ...)
 	 status:=dead
 	 localPort:={NewPort _}
-	 {self ProcessSeq({@sequencer kill($)})}
+	 {@sequencer kill()}
       end
 
    end
