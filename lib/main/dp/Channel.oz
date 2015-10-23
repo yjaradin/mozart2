@@ -152,11 +152,12 @@ define
       end
    end
    Uninitialized={NewCell true}
-   proc{Init}
-      if Uninitialized := false then
+   proc{Init} X in
+      if Uninitialized := X then
 	 for P in {Property.condGet 'dp.defaultListeners' [ListenTcp]} do
 	    {P}
 	 end
+	 X=false
       end
    end
 end
