@@ -681,7 +681,7 @@ define
 		     periodicThreadControl := _
 		  end
 	       end
-	       DelayBeforeNextCall = {Max 10 ({Min @lastSentTime+3*Bounds.min @lastReceivedTime+5*Bounds.max}
+	       DelayBeforeNextCall = {Max 100 ({Min @lastSentTime+3*Bounds.min @lastReceivedTime+5*Bounds.max}
 					      -{@rttPredictor currentTime($)})}
 	    end
 	    %{System.show DelayBeforeNextCall#Bounds#C-@lastReceivedTime}
@@ -760,10 +760,10 @@ define
 	 max
       meth init()
 	 @min=50000 %50s
-	 @max=10 %10ms
+	 @max=100 %100ms
       end
       meth ping2(T1 T2)
-	 D = {Clamp {Clamp T2-T1 @min div 2 @max * 2} 10 50000}
+	 D = {Clamp {Clamp T2-T1 @min div 2 @max * 2} 100 50000}
 	 Delta = (@max-@min) div 10 in
 	 min:={Min D @min+Delta}
 	 max:={Max D @max-Delta}
