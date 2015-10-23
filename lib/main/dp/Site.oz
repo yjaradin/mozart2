@@ -106,9 +106,9 @@ define
 						 case Msg
 						 of siteEnquire(to:_ ask:ShortId) then
 						    S = {self getSite(ShortId unit $)} in
-						    {System.show enquire(ShortId)}
+						    %{System.show enquire(ShortId)}
 						    {Wait {S reachabilitySync($)}}
-						    {System.show synced(ShortId)}
+						    %{System.show synced(ShortId)}
 						    {From sendMessage(siteAnswer(to:site
 										 id:ShortId
 										 descr:{S getReachability($)}))}
