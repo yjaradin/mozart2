@@ -295,7 +295,7 @@ define
 	 end
 
 	 meth portSend(Msg Sync)
-	    Sync=@sync
+	    Sync2=@sync in
 	    case @status
 	    of 'Broken' then skip
 	    [] 'Breaking' then skip
@@ -303,10 +303,20 @@ define
 	       {@messagesToSend put(Msg)}
 	       {self SendMessages()}
 	    end
+	    thread
+	       %{System.show 'waiting for sync'}
+	       {Wait {self syncLocal($)}}
+	       %{System.show 'got sync'}
+	       Sync=Sync2
+	    end
 	 end
 	 meth portSendRecv(Msg Res Sync)
-	    Sync=@sync
+	    Sync2=@sync in
 	    {PrintError "Port.sendRecv is not supported on distributed ports."}
+	    thread
+	       {Wait {self syncLocal($)}}
+	       Sync=Sync2
+	    end
 	 end
 
 	 meth release(K ...)
@@ -336,7 +346,14 @@ define
 	       {self RegisterWithCoordinator()}
 	    end
 	 end
-
+	 meth syncLocal($)
+	    case @coordinatorSite
+	    of unit then unit
+	    [] S then
+	       %{System.show 'coordinating on'(S)}
+	       {S sync($)}
+	    end
+	 end
 	 meth synchro($)
 	    unit
 	 end

@@ -194,6 +194,9 @@ define
       meth getBrokenAlarm($)
 	 _
       end
+      meth sync($)
+	 unit
+      end
    end
    This = {New ThisSite init()}
 
@@ -208,6 +211,9 @@ define
 	    @localSite = This
 	    @shortId = ShortId
 	    @messenger = {GetMessenger ShortId self}
+	 end
+	 meth sync($)
+	    {@messenger sync($)}
 	 end
 
 	 meth setReachability(R)
@@ -445,6 +451,9 @@ define
 	       end in
 	       {Loop}
 	    end
+	 end
+	 meth sync($)
+	    unit
 	 end
 	 meth setAddresses(As)
 	    addresses := As
