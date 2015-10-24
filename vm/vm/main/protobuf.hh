@@ -246,6 +246,7 @@ UnstableNode serializeProtobuf(VM vm, pbuf::MessageFactory* factory,
     MOZART_RETHROW(vm);
   } MOZART_ENDTRY(vm);
   std::string str = msg->SerializeAsString();
+  delete msg;
   return UnstableNode::build<ByteString>(vm, newLString(vm,
     reinterpret_cast<const unsigned char*>(str.data()), str.length()));
 }
